@@ -1,0 +1,88 @@
+{
+"Groups":
+[{id: 0,
+	name: "Family",
+	users: [2, 5]
+},
+{id: 1,
+ name: "School project",
+ users: [2, 45, 11, 1]
+},
+{id: 2,
+ name: "Friends",
+ users: [2]
+}],
+
+"List0":
+[{id: 0,
+	name: "Grocery list"
+	},
+	{id: 1,
+	name: "Cleaning list"}
+],
+
+"List1":
+[{id: 0,
+	name: "Assignments"
+	},
+	{id: 1,
+	name: "Presentation topics"}
+],
+	"List2":
+	[],
+
+	"List00":
+	{id: 0,
+		name: "Grocery list",
+		tasks: [
+				{
+					id: 0,
+					value: "Milk",
+					checked: false
+				}]
+		},
+
+		"List01":
+		{
+				id: 1,
+				name: "Cleaning list",
+				tasks: [
+					{ id: 0,
+						value: "Vacuum",
+						checked: false
+					},
+					{ id: 1,
+						value: "Clean the windows",
+						checked: true
+					}
+				]
+			},
+			"List10":
+			{
+					id: 0,
+					name: "Assignments",
+					tasks: [
+						{ id: 0,
+							value: "PR1",
+							checked: false
+						},
+						{ id: 1,
+							value: "PR2",
+							checked: false
+						}
+					]
+				},
+				"List11":
+				{
+						id: 1,
+						name: "Presentation topics",
+						tasks: [
+							{ id: 0,
+								value: "Databases",
+								checked: false
+							}
+						]
+					},
+
+
+}

@@ -24,6 +24,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     return result.ops[0]._id;
   }
 
+  // Inserts a list into the given group ID with given list name
+  // Returns the ID of the newly created list
   function addList(groupID, listName) {
     var id = new objectID();
     var listToInsert = {

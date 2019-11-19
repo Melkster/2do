@@ -1,0 +1,12 @@
+{
+  "name": "2do-server",
+  "version": "1.0.0",
+  "description": "collaborative todo list server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

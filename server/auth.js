@@ -4,19 +4,21 @@ var salt = bcrypt.genSaltSync(10);
 var hash = bcrypt.hashSync("melkersuger", salt);
 var hash2 = bcrypt.hashSync("melkersuger", salt);
 
+
 var users = [{
-    name : 'melker',
-    passwordhash : 'aa'
-},{
-    name : 'michael',
-    passwordhash : 'bb'
-},{
-    name : 'axel',
-    passwordhash : 'cc'
-},{
-    name : 'vanja',
-    passwordhash : 'dd'
-}]
+	name : 'melker',
+	passwordhash : 'aa'
+    },{
+	name : 'michael',
+	passwordhash : 'bb'
+    },{
+	name : 'axel',
+	passwordhash : 'cc'
+    },{
+	name : 'vanja',
+	passwordhash : 'dd'
+    }]
+
 
 async function hash_password(user, password){
     const hash3 = await bcrypt.hash(password, salt) 
@@ -54,3 +56,6 @@ async function authenticate(username, password){
 	console.log("succesfull login");
     }
 })();
+
+
+export default auth;

@@ -29,7 +29,12 @@ socket.on('success', msg => {
 });
 
 
+socket.on('groupCreated', msg => {
+    console.log(msg);
+});
+
 //socket.emit('chat message', readline.question("any message to the group? "), group);
-socket.emit('addTask', '5dd3bb4e0050af10677cb463', '5dd3bc3f9500331078a5dd83', readline.question("what task to add? "));
+socket.emit('createGroup', "1000", "100");
+socket.emit('addTask', '100', '100', readline.question("what task to add? "));
 socket.emit('authenticate', '', 'melkersuger');
 

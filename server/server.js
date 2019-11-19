@@ -28,8 +28,8 @@ var users = [{
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var database = db.db("mydb");
     
-    // var x = await dbfunc.createGroup(database, "5", "Grupp 8");
-    // var y = await dbfunc.createGroup(database, "5", "Grupp 1");
+    //var x = await dbfunc.createGroup(database, "5", "Grupp 8");
+    //var y = await dbfunc.createGroup(database, "5", "Grupp 1");
     // var id1 = dbfunc.createList(database, x, "aaaa");
     // var id2 = dbfunc.createList(database, x, "bbbb");
     // var id3 = dbfunc.addTask(database, x, id2, "mat");
@@ -57,19 +57,19 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 	    
 	})
 	
-	socket.on('join list', listID => {
+	socket.on('joinList', listID => {
 	    socket.join(listID);
 	    console.log(listID);
 	    io.in(listID).emit('has joined', 'A user has joined the list-room: ' + listID);
 	})
 
-	socket.on('join group', groupID => {
+	socket.on('joinGroup', groupID => {
 	    socket.join(groupID);
 	    console.log(groupID);
 	    io.in(groupID).emit('has joined', 'A user has joined the group-room: ' + groupID);
 	})
 	
-	socket.on('chat message', (msg, group) => {
+	socket.on('chatMessage', (msg, group) => {
 	    io.in(group).emit('message', msg);
 	    console.log('Message: ', msg);
 	})
@@ -111,12 +111,21 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
 	socket.on('createList', (groupID, value) => {
 	    //TODO: Add list to database
-	    db.createList(groupID, value);
+	    var listID = dbfunc.createList(database, groupID, value);
+	    io.emit('createList', listID);
 	})
 	
-	socket.on('createGroup', (userID, value) => {
-	    //TODO: Add group to database
-	    dbfunc.createGroup(userID, groupName);
+	socket.on('createGroup', (userID, groupName) => {
+	    (async () => {
+		try{
+		    var groupID = await dbfunc.createGroup(database, userID, groupName);
+		    console.log(groupID);
+		    io.emit('createGroup', groupID);
+		} catch(e) {
+		    console.log(e);
+		    io.emit('error', e);
+		}
+	    })();
 	})
 	
 	socket.on('checkTask', (listID, taskID, userID) => {

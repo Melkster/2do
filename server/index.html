@@ -8,9 +8,10 @@
   <body>
     <ul id="messages"></ul>
     <form action="">
-      <input id="msg" autocomplete="off" /><button>Send</button>
-      <a href="/auth/google">Sign In with Google</a>
+      <!--<input id="msg" autocomplete="off" /><button>Send</button>-->
+      <input id="join" autocomplete="off" /><button>join room</button>      
     </form>
+    
   </body>
 </html><!DOCTYPE html>
 <html>
@@ -24,7 +25,7 @@
       var socket = io();
       $('form').submit(function(e){
       e.preventDefault();
-      socket.emit('chat message', $('#msg').val());
+      socket.emit('join group', $('#join').val());
       return false;
       });
       });

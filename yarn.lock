@@ -4251,6 +4251,13 @@ react-native-safe-area-view@^0.14.1:
   dependencies:
     debounce "^1.2.0"
 
+react-native-tableview-simple@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-tableview-simple/-/react-native-tableview-simple-2.4.0.tgz#b60878d4c13bcf5fa5a1412c5c704986f323bef6"
+  integrity sha512-aFEV0XNBVwk7bs4vT0nrbowA61TYceyA7g4BKR7WnFt3BtUis6CdVwAxxfcHue78pyjDbDDdZId1NQffEkLBRA==
+  dependencies:
+    prop-types "^15.7.2"
+
 react-native-view-shot@2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/react-native-view-shot/-/react-native-view-shot-2.6.0.tgz#3b23675826f67658366352c4b97b59a6aded2f43"

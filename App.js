@@ -5,11 +5,11 @@ import { createStackNavigator } from "react-navigation-stack";
 
 // File imports
 import AuthLoadingScreen from "./AuthLoadingScreen";
-import HomeScreen from "./HomeScreen";
-import OtherScreen from "./OtherScreen";
+import GroupsScreen from "./GroupsScreen";
+import ListsScreen from "./ListsScreen";
 import SignInScreen from "./SignInScreen";
 
-const AppStack = createStackNavigator({ Home: HomeScreen, Other: OtherScreen });
+const AppStack = createStackNavigator({ Groups: GroupsScreen, Lists: ListsScreen });
 const AuthStack = createStackNavigator({ SignIn: SignInScreen });
 
 export default createAppContainer(

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import { ActivityIndicator, AsyncStorage, Button, StatusBar, StyleSheet, View } from "react-native";
 
 const styles = StyleSheet.create({
@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
   }
 });
 
-export default class SignInScreen extends React.Component {
+export default class SignInScreen extends Component {
   constructor(props) {
     super(props);
   }

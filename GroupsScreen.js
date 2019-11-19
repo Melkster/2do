@@ -65,10 +65,6 @@ export default class GroupsScreen extends Component {
     );
   }
 
-  _showMoreApp = () => {
-    this.props.navigation.navigate("Other");
-  };
-
   _signOutAsync = async () => {
     await AsyncStorage.clear();
     this.props.navigation.navigate("Auth");

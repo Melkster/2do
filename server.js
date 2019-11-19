@@ -6,8 +6,11 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   if (err) throw err;
   var database = db.db("mydb");
   var x = await createGroup("1", "Grupp 2");
-  var y = await createGroup("2", "Grupp 3");
-  deleteGroup(y);
+  console.log(x);
+  inviteUser(x, "2");
+  leaveGroup(x, "1");
+  // var y = await createGroup("2", "Grupp 3");
+  // deleteGroup(y);
   // var id1 = createList(x, "Matlista");
   // var id2 = createList(x, "Städning");
   // console.log(id1);
@@ -27,10 +30,11 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   async function createGroup(userID, groupName) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
     try {
-      const result = await database.collection("Groups").insertOne(groupToInsert);
+      const result = await database
+        .collection("Groups")
+        .insertOne(groupToInsert);
       return result.ops[0]._id;
-    }
-    catch (err) {
+    } catch (err) {
       throw err;
     }
   }
@@ -56,19 +60,37 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   function addTask(groupID, listID, value) {
     var id = new objectID();
     var taskToInsert = {
-      $push: { "lists.$.tasks" : { _id: id, value: value, checked: false } }
+      $push: { "lists.$.tasks": { _id: id, value: value, checked: false } }
     };
     // var query = { _id: groupID, "lists._id": listID };
     var query = { _id: groupID, "lists._id": listID };
-    database.collection("Groups").updateOne(query, taskToInsert, (error, response) => {
-      if (error) throw (error);
-    });
+    database
+      .collection("Groups")
+      .updateOne(query, taskToInsert, (error, response) => {
+        if (error) throw error;
+      });
     return id;
   }
 
   // Deletes a group with the given groupID
   function deleteGroup(groupID) {
-    database.collection("Groups").deleteOne( { _id: groupID } );
+    database.collection("Groups").deleteOne({ _id: groupID });
   }
+
+  // Adds a user with the given userID to the given groupID
+  function inviteUser(groupID, userID) {
+    var userToInsert = { $push: { users:  userID  } };
+    var query = { _id: groupID };
+    database.collection("Groups").updateOne(query, userToInsert);
+  }
+
+  // Removes the user with the given userID from the given groupID
+  function leaveGroup(groupID, userID) {
+    var userToRemove = { $pull: { users: userID }};
+    var query = { _id: groupID };
+    database.collection("Groups").updateOne(query, userToRemove);
+  }
+
+
 
 });

@@ -11,8 +11,8 @@ socket.on('connect', socket => {
 
 
 
-var group = readline.question("what room to join: ")
-socket.emit('join group', group);
+//var group = readline.question("what room to join: ")
+///socket.emit('join group', group);
 socket.on('has joined', msg => {
     console.log(msg);
 });
@@ -30,6 +30,6 @@ socket.on('success', msg => {
 
 
 //socket.emit('chat message', readline.question("any message to the group? "), group);
-socket.emit('add task', readline.question("what task to add? "), group);
-socket.emit('authenticate', 'michael', 'melkersuger');
+socket.emit('addTask', '5dd3bb4e0050af10677cb463', '5dd3bc3f9500331078a5dd83', readline.question("what task to add? "));
+socket.emit('authenticate', '', 'melkersuger');
 

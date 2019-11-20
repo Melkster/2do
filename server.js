@@ -8,9 +8,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var group = await createGroup("1", "Grupp 2");
   console.log(group);
   list = await createList(group, "Hej");
-  renameList(list, "då");
   console.log(list);
-  // task = await addTask(list, "test");
+  task = await addTask(list, "test");
+  editTask(list, task, "Då");
   // await addTask(list, "asd");
   // task1 = await addTask(list, "tvätta");
   // await addTask(list, "städa");
@@ -141,12 +141,28 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     }
   }
 
-  // deletes a task with the given taskID from the list with the given listID
+  // Deletes a task with the given taskID from the list with the given listID
   function deleteTask(listID, taskID) {
     var taskToRemove = { $pull: { "lists.$.tasks": { _id: taskID } } };
     var query = { "lists._id": listID };
     try {
       database.collection("Groups").updateOne(query, taskToRemove);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Changes the value of the taskID in the listID to newValue
+  function editTask(listID, taskID, newValue) {
+    var taskToEdit = {
+      $set: { "lists.$[outer].tasks.$[inner].value": newValue }
+    };
+    var arrayFilters = {
+      arrayFilters: [{ "outer._id": listID }, { "inner._id": taskID }]
+    };
+    var query = { "lists._id": listID };
+    try {
+      database.collection("Groups").updateOne(query, taskToEdit, arrayFilters);
     } catch (err) {
       throw err;
     }

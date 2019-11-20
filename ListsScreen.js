@@ -8,10 +8,10 @@ import styles from "./styles.js"
 const CellVariant = props => (
   <Cell
     cellStyle="Subtitle"
-    title={props.title}
+    title={props.list.name}
     accessory="DisclosureIndicator"
     onPress={() => {
-      props.navigation.navigate("Tasks", { id: props.id, parentID: props.parentID });
+      props.navigation.navigate("Tasks", { id: props.list.id, parentID: props.parentID });
     }}
     image={<Image style={{ borderRadius: 5 }} source={listLogo} />}
   />
@@ -26,16 +26,14 @@ export default class ListsScreen extends Component {
 
   render() {
     groupID = this.props.navigation.getParam('id');
-    list = "List" + groupID;
+    listname = "List" + groupID;
     return (
       <ScrollView contentContainerStyle={styles.stage}>
         <TableView>
           <Section>
-            {data[list].map(list => {
-              title = list.name;
-              id = list.id;
+            {data[listname].map(list => {
               return (
-                <CellVariant key={id} id={id} parentID={groupID} title={title} navigation={this.props.navigation} />
+                <CellVariant key={list.id} list={list} parentID={groupID} navigation={this.props.navigation} />
               );
             })}
           </Section>

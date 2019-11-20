@@ -1,20 +1,11 @@
 import React, { Component } from "react";
 import { Image, ScrollView, View } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
+import Task from "./Task.js"
 import groupLogo from "./assets/groupSymbol.png";
 import data from "./data.json"
 import styles from "./styles.js"
-import Checkbox from "./Checkbox.js"
 
-const CellVariant = props => (
-  <Cell
-    title={props.value}
-    onPress={() => {
-      props.navigation.navigate("Login");
-    }}
-    image={<Checkbox checked={props.checked}/>}
-  />
-);
 
 export default class TasksScreen extends Component {
   static navigationOptions = ({ navigation }) => {
@@ -34,28 +25,18 @@ export default class TasksScreen extends Component {
       <ScrollView contentContainerStyle={styles.stage}>
         <TableView>
           <Section header="Tasks left:">
-            {data[title].tasks.map(task => {
-              checked = task.checked;
-              if (!checked){
-                value = task.value;
-                id = task.id;
-                return (
-                  <CellVariant key={id} value={value} id={id} checked={checked} navigation={this.props.navigation} />
-                );
-              }
-            })}
+            {data[title].tasks.filter(task => (!task.checked)).map(task => {
+              return(
+              <Task key={task.id} task={task}/>
+            );}
+          )}
           </Section>
           <Section header="Done:">
-            {data[title].tasks.map(task => {
-              checked = task.checked;
-              if (checked){
-                value = task.value;
-                id = task.id;
-                return (
-                  <CellVariant key={id} value={value} id={id} checked={checked} navigation={this.props.navigation} />
-                );
-              }
-            })}
+          {data[title].tasks.filter(task => (task.checked)).map(task => {
+            return(
+              <Task key={task.id} task={task}/>
+          );}
+        )}
           </Section>
         </TableView>
       </ScrollView>

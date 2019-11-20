@@ -5,16 +5,11 @@ import unchecked from "./assets/unchecked.png";
 import styles from "./styles.js";
 
 export default class Checkbox extends Component {
-  constructor(props) {
-    super(props);
-    console.log("state: "+ props.checked)
-    this.state = {checked: props.checked};
-  }
 
   render() {
     return (
-      <TouchableOpacity style={{padding: 15}} onPress={() => {this.setState({checked: !this.state.checked})}}>
-      <Image style={{width: 20, height: 20}} source={this.chooseImage(this.state.checked)} />
+      <TouchableOpacity style={{padding: 15}} onPress={this.props.handler}>
+        <Image style={{width: 20, height: 20}} source={this.chooseImage(this.props.checked)} />
       </TouchableOpacity>);
   }
 
@@ -24,6 +19,5 @@ export default class Checkbox extends Component {
     } else {
       return (unchecked)
     }
-
   };
 }

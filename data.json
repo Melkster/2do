@@ -20,11 +20,7 @@
     "id": 0,
     "name": "Grocery list",
     "tasks": [
-      {
-        "id": 0,
-        "value": "Milk",
-        "checked": false
-      }
+      { "id": 0, "value": "Milk", "checked": false }
     ]
   },
 
@@ -47,6 +43,8 @@
   "List11": {
     "id": 1,
     "name": "Presentation topics",
-    "tasks": [{ "id": 0, "value": "Databases", "checked": false }]
+    "tasks": [
+      { "id": 0, "value": "Databases", "checked": false }
+    ]
   }
 }

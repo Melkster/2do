@@ -1,12 +1,15 @@
 {
-  "name": "2do-server",
+  "name": "2Do_server",
   "version": "1.0.0",
   "description": "collaborative todo list server",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "mongo"
   },
-  "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.7",
+    "socket.io": "^2.3.0"
+  }
 }

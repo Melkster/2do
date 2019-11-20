@@ -5,9 +5,20 @@ var url = "mongodb://localhost:27017/data/db";
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   if (err) throw err;
   var database = db.db("mydb");
-  //var x = await createGroup("1", "Grupp 2");
-  // console.log(x);
-  //y = await createList(x, "Hej");
+  var group = await createGroup("1", "Grupp 2");
+  console.log(group);
+  list = await createList(group, "Hej");
+  renameList(list, "då");
+  console.log(list);
+  // task = await addTask(list, "test");
+  // await addTask(list, "asd");
+  // task1 = await addTask(list, "tvätta");
+  // await addTask(list, "städa");
+  // deleteTask(group, list, task1);
+  // console.log(task);
+  // deleteTask(group, list, task);
+  // renameList(y, "Då");
+  // deleteList(y);
   //z = await createList(x, "Omg");
   // console.log(y);
   //renameList(x, z, "Då");
@@ -49,14 +60,14 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     }
   }
 
-  // Adds a task to the provided groupID and listID with the provided text
+  // Adds a task to the provided listID with the provided text
   // Returns the ID of the newly created task
-  async function addTask(groupID, listID, value) {
+  async function addTask(listID, value) {
     var id = new objectID();
     var taskToInsert = {
       $push: { "lists.$.tasks": { _id: id, value: value, checked: false } }
     };
-    var query = { _id: groupID, "lists._id": listID };
+    var query = { "lists._id": listID };
     try {
       await database.collection("Groups").updateOne(query, taskToInsert);
       return id;
@@ -108,22 +119,34 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   }
 
   // Deletes a list with the given listID from the given groupID
-  function deleteList(groupID, listID) {
+  function deleteList(listID) {
     var listToRemove = { $pull: { lists: { _id: listID } } };
-    var query = { _id: groupID };
+    var query = { "lists._id": listID };
     try {
-      database.collection("Group").updateOne(query, listToRemove);
+      console.log("delete");
+      database.collection("Groups").updateOne(query, listToRemove);
     } catch (err) {
       throw err;
     }
   }
 
-  // Renames a list with the given listID in the given groupID with the new newName
-  function renameList(groupID, listID, newName) {
+  // Renames a list with the given listID with the new newName
+  function renameList(listID, newName) {
     var listToEdit = { $set: { "lists.$.name": newName } };
-    var query = { _id: groupID, "lists._id": listID };
+    var query = { "lists._id": listID };
     try {
       database.collection("Groups").updateOne(query, listToEdit);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // deletes a task with the given taskID from the list with the given listID
+  function deleteTask(listID, taskID) {
+    var taskToRemove = { $pull: { "lists.$.tasks": { _id: taskID } } };
+    var query = { "lists._id": listID };
+    try {
+      database.collection("Groups").updateOne(query, taskToRemove);
     } catch (err) {
       throw err;
     }

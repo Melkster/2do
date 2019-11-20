@@ -1,27 +1,9 @@
 import React, { Component } from "react";
-import {
-  ActivityIndicator,
-  AppRegistry,
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View
-} from "react-native";
-import groupLogo from "./assets/groupSymbol.png";
+import { Image, ScrollView, View } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
+import listLogo from "./assets/listSymbol.png";
 import data from "./data.json";
-
-const styles = StyleSheet.create({
-  stage: {
-    backgroundColor: "#EFEFF4",
-    paddingTop: 20,
-    paddingBottom: 20
-  }
-});
+import styles from "./styles.js"
 
 const CellVariant = props => (
   <Cell
@@ -31,25 +13,27 @@ const CellVariant = props => (
     onPress={() => {
       props.navigation.navigate("Tasks", { id: props.id, parentID: props.parentID });
     }}
-    image={<Image style={{ borderRadius: 5 }} source={groupLogo} />}
+    image={<Image style={{ borderRadius: 5 }} source={listLogo} />}
   />
 );
 
 export default class ListsScreen extends Component {
+  static navigationOptions = ({ navigation }) => {
+      return {
+        title: navigation.getParam('title'),
+      };
+    };
+
   render() {
-    groupID = this.props.navigation.state.params.id;
-    title = this.props.navigation.state.params.title;
+    groupID = this.props.navigation.getParam('id');
     list = "List" + groupID;
     return (
       <ScrollView contentContainerStyle={styles.stage}>
         <TableView>
-          <Section header={title}>
+          <Section>
             {data[list].map(list => {
               title = list.name;
-              //tasks = "Tasks: " + list.tasks.length;
               id = list.id;
-              console.log("title: " + title, "id: " + id);
-              console.log("group id: " + groupID);
               return (
                 <CellVariant key={id} id={id} parentID={groupID} title={title} navigation={this.props.navigation} />
               );

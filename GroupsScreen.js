@@ -1,29 +1,12 @@
-import React, { Component } from "react";
-import {
-  ActivityIndicator,
-  AppRegistry,
-  AsyncStorage,
-  Button,
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View
-} from "react-native";
-import groupLogo from "./assets/groupSymbol.png";
+import React, {Component} from "react";
+import { AsyncStorage, ScrollView, View, Button, Image } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
+import groupLogo from "./assets/groupSymbol.png";
 import data from "./data.json";
 
-const styles = StyleSheet.create({
-  stage: {
-    backgroundColor: "#EFEFF4",
-    paddingTop: 20,
-    paddingBottom: 20
-  }
-});
+// styles are undefined atm for some reason :/
+import styles from "./styles.js"
+
 
 const CellVariant = props => (
   <Cell
@@ -40,14 +23,14 @@ const CellVariant = props => (
 
 export default class GroupsScreen extends Component {
   static navigationOptions = {
-    title: "2Do"
+    title: "Your groups"
   };
 
   render() {
     return (
       <ScrollView contentContainerStyle={styles.stage}>
         <TableView>
-          <Section header="Groups">
+          <Section>
             {data.Groups.map(group => {
               title = group.name;
               members = "Members: " + group.users.length;

@@ -1,58 +1,60 @@
 import React, { Component } from "react";
-import {
-  ActivityIndicator,
-  AppRegistry,
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View
-} from "react-native";
-import groupLogo from "./assets/groupSymbol.png";
+import { Image, ScrollView, View } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
-import data from "./data.json";
+import groupLogo from "./assets/groupSymbol.png";
+import data from "./data.json"
+import styles from "./styles.js"
+import Checkbox from "./Checkbox.js"
 
 const CellVariant = props => (
   <Cell
-    cellStyle="Subtitle"
     title={props.value}
-    detail={props.checked}
-    accessory="DisclosureIndicator"
     onPress={() => {
       props.navigation.navigate("Login");
     }}
-    image={<Image style={{ borderRadius: 5 }} source={groupLogo} />}
+    image={<Checkbox checked={props.checked}/>}
   />
 );
 
-const styles = StyleSheet.create({
-  stage: {
-    backgroundColor: "#EFEFF4",
-    paddingTop: 20,
-    paddingBottom: 20
-  }
-});
-
 export default class TasksScreen extends Component {
+  static navigationOptions = ({ navigation }) => {
+      listId = navigation.getParam('id');
+      parentID = navigation.getParam('parentID');
+      title = "List" + parentID + listId;
+      return {
+        title: data[title].name,
+      };
+    };
+
   render() {
-    listId = this.props.navigation.state.params.id;
-    parentID = this.props.navigation.state.params.parentID;
+    listId = this.props.navigation.getParam('id');
+    parentID = this.props.navigation.getParam('parentID');
     title = "List" + parentID + listId;
-    console.log("Recieved title: " + title, data[title].name);
     return (
       <ScrollView contentContainerStyle={styles.stage}>
         <TableView>
-          <Section header={data[title].name}>
+          <Section header="Tasks left:">
             {data[title].tasks.map(task => {
-              value = task.value;
-              checked = "Is checked: " + task.checked;
-              id = task.id;
-              return (
-                <CellVariant key={id} value={value} id={id} checked={checked} navigation={this.props.navigation} />
-              );
+              checked = task.checked;
+              if (!checked){
+                value = task.value;
+                id = task.id;
+                return (
+                  <CellVariant key={id} value={value} id={id} checked={checked} navigation={this.props.navigation} />
+                );
+              }
+            })}
+          </Section>
+          <Section header="Done:">
+            {data[title].tasks.map(task => {
+              checked = task.checked;
+              if (checked){
+                value = task.value;
+                id = task.id;
+                return (
+                  <CellVariant key={id} value={value} id={id} checked={checked} navigation={this.props.navigation} />
+                );
+              }
             })}
           </Section>
         </TableView>

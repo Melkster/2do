@@ -46,6 +46,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   io.on("connection", socket => {
     console.log("A user connected");
     socket.on("authenticate", (username, password) => {
+      console.log("authenticate", username, password);
       if (!username) {
         io.emit("error", "missing username");
       } else if (!password) {
@@ -54,7 +55,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         (async () => {
           var res = await authenticate(username, password);
           if (res) {
-            io.emit("success", "USERID");
+            console.log("succes boiiiii");
+            io.emit("authenticate", true);
           } else {
             io.emit("error", "Autentication failed");
           }
@@ -63,6 +65,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("register", (username, password) => {
+      console.log("user reg", username, password);
       var userid = 1;
       (async () => {
         await hash_password(username, password);
@@ -93,23 +96,25 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("getLists", groupID => {
-	//TODO: return list of lists for a group
-	io.emit("getLists", 1);
+      //TODO: return list of lists for a group
+      io.emit("getLists", 1);
     });
 
     socket.on("deleteTask", (listID, taskID, userID) => {
-	//TODO: remove task from database
-	io.emit("deleteTask", true);
+      //TODO: remove task from database
+      io.emit("deleteTask", true);
     });
 
     socket.on("deleteList", (groupID, listID) => {
 	//TODO: delete list from database
-	io.emit("deleteList", true);
+	dbfunc.deleteList(listID);
+      io.emit("deleteList", true);
     });
 
     socket.on("deleteGroup", (groupID, userID) => {
       //TODO: delete group from database
-      dbfunc.deleteGroup(groupID);
+	dbfunc.deleteGroup(groupID);
+	io.emit("deleteGroup",true);
     });
 
     socket.on("addTask", (groupID, listID, value) => {
@@ -144,28 +149,28 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("checkTask", (listID, taskID, userID) => {
-	//TODO: check a task given an ID
-	io.emit("checkTask", taskID);
+      //TODO: check a task given an ID
+      io.emit("checkTask", taskID);
     });
 
     socket.on("uncheckTask", (listID, taskID, userID) => {
-	//TODO: uncheck a task given an ID
-	io.emit("uncheckTask", taskID);
+      //TODO: uncheck a task given an ID
+      io.emit("uncheckTask", taskID);
     });
 
     socket.on("editTask", (listID, taskID, userID, value) => {
-	//TODO: Edit a task given and ID and new value
-	io.emit("editTask", taskID);
+      //TODO: Edit a task given and ID and new value
+      io.emit("editTask", taskID);
     });
 
     socket.on("editList", (groupID, listID, newName) => {
-	//TODO: Edit a list given and ID and new value
-	io.emit("editList", listID);
+      //TODO: Edit a list given and ID and new value
+      io.emit("editList", listID);
     });
 
     socket.on("editGroup", (/*groupID, value*/) => {
-	//TODO: Edit a group given and ID and new value
-	io.emit("editGroup", groupID);
+      //TODO: Edit a group given and ID and new value
+      io.emit("editGroup", groupID);
     });
 
     socket.on("inviteUser", (groupID, userID) => {

@@ -1,17 +1,21 @@
-var io = require("socket.io")(3000);
+const app = require("express")();
+const http = require("http").Server(app);
+const io = require("socket.io")(http);
+
 var bcrypt = require("bcrypt");
+var salt = bcrypt.genSaltSync(10);
 
 var mongo = require("mongodb").MongoClient;
-//var objectID = require("mongodb").ObjectID;
+var objectID = require("mongodb").ObjectID;
 var url = "mongodb://localhost:27017/data/db";
 
 var dbfunc = require("./db");
-//var database = new db();
+// //var database = new db();
 
 //console.log(typeof db.createGroup);
 var users = [
   {
-    name: "melker",
+    name: "foo",
     passwordhash: "aa"
   },
   {
@@ -27,6 +31,11 @@ var users = [
     passwordhash: "dd"
   }
 ];
+
+const port = 3000;
+http.listen(port, "0.0.0.0", () => {
+  console.log(`Listening on localhost:${port}`);
+});
 
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
@@ -58,6 +67,15 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+
+      socket.on("register", (username, password) => {
+	  var userid = 1;
+	  (async () => {
+	      await hash_password(username, password);
+	      io.emit("register", userid);
+	  })();
+      });
+      
     socket.on("joinList", listID => {
       socket.join(listID);
       console.log(listID);
@@ -75,8 +93,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       console.log("Message: ", msg);
     });
 
-    socket.on("getGroups", userID => {
-      //TODO: return list of groups for a user
+    socket.on("getGroups", () => {
+	//TODO: return list of groups for a user
+      io.emit("getGroups", 1);
     });
 
     socket.on("getLists", groupID => {

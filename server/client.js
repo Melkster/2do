@@ -1,5 +1,9 @@
 var io = require("socket.io-client");
+<<<<<<< HEAD
 var socket = io.connect("http://192.168.43.229:3000");
+=======
+var socket = io.connect("http://192.168.43.254:3000");
+>>>>>>> socket-connection
 
 var readline = require("readline-sync");
 

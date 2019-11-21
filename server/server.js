@@ -32,11 +32,6 @@ var users = [
   }
 ];
 
-const port = 3000;
-http.listen(port, "0.0.0.0", () => {
-  console.log(`Listening on localhost:${port}`);
-});
-
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
 
@@ -67,15 +62,14 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+    socket.on("register", (username, password) => {
+      var userid = 1;
+      (async () => {
+        await hash_password(username, password);
+        io.emit("register", userid);
+      })();
+    });
 
-      socket.on("register", (username, password) => {
-	  var userid = 1;
-	  (async () => {
-	      await hash_password(username, password);
-	      io.emit("register", userid);
-	  })();
-      });
-      
     socket.on("joinList", listID => {
       socket.join(listID);
       console.log(listID);
@@ -94,7 +88,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("getGroups", () => {
-	//TODO: return list of groups for a user
+      //TODO: return list of groups for a user
       io.emit("getGroups", 1);
     });
 
@@ -201,4 +195,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     }
   });
   db.close();
+});
+
+http.listen(3000, "0.0.0.0", () => {
+  console.log("Listening on localhost: 3000");
 });

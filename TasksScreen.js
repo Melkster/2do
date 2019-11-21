@@ -14,6 +14,7 @@ import {
 import groupLogo from "./assets/groupSymbol.png";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import data from "./data.json";
+import styles from "./styles";
 
 const CellVariant = props => (
   <Cell
@@ -27,14 +28,6 @@ const CellVariant = props => (
     image={<Image style={{ borderRadius: 5 }} source={groupLogo} />}
   />
 );
-
-const styles = StyleSheet.create({
-  stage: {
-    backgroundColor: "#EFEFF4",
-    paddingTop: 20,
-    paddingBottom: 20
-  }
-});
 
 export default class TasksScreen extends Component {
   render() {

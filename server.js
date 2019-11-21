@@ -10,7 +10,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   list = await createList(group, "Hej");
   console.log(list);
   task = await addTask(list, "test");
-  editTask(list, task, "Då");
+  checkTask(list, task);
+  uncheckTask(list, task);
   // await addTask(list, "asd");
   // task1 = await addTask(list, "tvätta");
   // await addTask(list, "städa");
@@ -163,6 +164,38 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var query = { "lists._id": listID };
     try {
       database.collection("Groups").updateOne(query, taskToEdit, arrayFilters);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Checks the task with the taskID in the listID
+  function checkTask(listID, taskID) {
+    var taskToCheck = {
+      $set: { "lists.$[outer].tasks.$[inner].checked": true }
+    };
+    var arrayFilters = {
+      arrayFilters: [{ "outer._id": listID }, { "inner._id": taskID }]
+    };
+    var query = { "lists._id": listID };
+    try {
+      database.collection("Groups").updateOne(query, taskToCheck, arrayFilters);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Unchecks the task with the taskID in the listID
+  function uncheckTask(listID, taskID) {
+    var taskToCheck = {
+      $set: { "lists.$[outer].tasks.$[inner].checked": false }
+    };
+    var arrayFilters = {
+      arrayFilters: [{ "outer._id": listID }, { "inner._id": taskID }]
+    };
+    var query = { "lists._id": listID };
+    try {
+      database.collection("Groups").updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }

@@ -11,19 +11,13 @@ import {
   Switch,
   Text,
   TextInput,
-  View
+  View,
+  Alert
 } from "react-native";
 import groupLogo from "./assets/groupSymbol.png";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import data from "./data.json";
-
-const styles = StyleSheet.create({
-  stage: {
-    backgroundColor: "#EFEFF4",
-    paddingTop: 20,
-    paddingBottom: 20
-  }
-});
+import styles from "./styles";
 
 const CellVariant = props => (
   <Cell
@@ -64,10 +58,6 @@ export default class GroupsScreen extends Component {
       </ScrollView>
     );
   }
-
-  _showMoreApp = () => {
-    this.props.navigation.navigate("Other");
-  };
 
   _signOutAsync = async () => {
     await AsyncStorage.clear();

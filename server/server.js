@@ -93,15 +93,18 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("getLists", groupID => {
-      //TODO: return list of lists for a group
+	//TODO: return list of lists for a group
+	io.emit("getLists", 1);
     });
 
     socket.on("deleteTask", (listID, taskID, userID) => {
-      //TODO: remove task from database
+	//TODO: remove task from database
+	io.emit("deleteTask", true);
     });
 
     socket.on("deleteList", (groupID, listID) => {
-      //TODO: delete list from database
+	//TODO: delete list from database
+	io.emit("deleteList", true);
     });
 
     socket.on("deleteGroup", (groupID, userID) => {
@@ -141,23 +144,28 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("checkTask", (listID, taskID, userID) => {
-      //TODO: check a task given an ID
+	//TODO: check a task given an ID
+	io.emit("checkTask", taskID);
     });
 
     socket.on("uncheckTask", (listID, taskID, userID) => {
-      //TODO: uncheck a task given an ID
+	//TODO: uncheck a task given an ID
+	io.emit("uncheckTask", taskID);
     });
 
     socket.on("editTask", (listID, taskID, userID, value) => {
-      //TODO: Edit a task given and ID and new value
+	//TODO: Edit a task given and ID and new value
+	io.emit("editTask", taskID);
     });
 
     socket.on("editList", (groupID, listID, newName) => {
-      //TODO: Edit a list given and ID and new value
+	//TODO: Edit a list given and ID and new value
+	io.emit("editList", listID);
     });
 
     socket.on("editGroup", (/*groupID, value*/) => {
-      //TODO: Edit a group given and ID and new value
+	//TODO: Edit a group given and ID and new value
+	io.emit("editGroup", groupID);
     });
 
     socket.on("inviteUser", (groupID, userID) => {

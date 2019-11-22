@@ -8,10 +8,11 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var group = await createGroup("1", "Grupp 2");
   console.log(group);
   list = await createList(group, "Hej");
-  console.log(list);
+  // console.log(list);
   task = await addTask(list, "test");
-  await checkTask(list, task)
+  await checkTask(list, task);
   await uncheckTask(list, task);
+  await registerUser("axel", "123");
 
   db.close();
 
@@ -21,7 +22,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
     try {
       const result = await database
-        .collection("Groups")
+        .collection("groups")
         .insertOne(groupToInsert);
       return result.ops[0]._id;
     } catch (err) {
@@ -38,7 +39,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     };
     var query = { _id: groupID };
     try {
-      await database.collection("Groups").updateOne(query, listToInsert);
+      await database.collection("groups").updateOne(query, listToInsert);
       return id;
     } catch (err) {
       throw err;
@@ -54,7 +55,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("Groups").updateOne(query, taskToInsert);
+      await database.collection("groups").updateOne(query, taskToInsert);
       return id;
     } catch (err) {
       throw err;
@@ -64,7 +65,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   // Deletes a group with the given groupID
   async function deleteGroup(groupID) {
     try {
-      await database.collection("Groups").deleteOne({ _id: groupID });
+      await database.collection("groups").deleteOne({ _id: groupID });
     } catch (err) {
       throw err;
     }
@@ -75,7 +76,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var userToInsert = { $push: { users: userID } };
     var query = { _id: groupID };
     try {
-      await database.collection("Groups").updateOne(query, userToInsert);
+      await database.collection("groups").updateOne(query, userToInsert);
     } catch (err) {
       throw err;
     }
@@ -86,7 +87,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var userToRemove = { $pull: { users: userID } };
     var query = { _id: groupID };
     try {
-      await database.collection("Groups").updateOne(query, userToRemove);
+      await database.collection("groups").updateOne(query, userToRemove);
     } catch (err) {
       throw err;
     }
@@ -97,7 +98,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var newName = { $set: { name: newName } };
     var query = { _id: groupID };
     try {
-      await database.collection("Groups").updateOne(query, newName);
+      await database.collection("groups").updateOne(query, newName);
     } catch (err) {
       throw err;
     }
@@ -109,7 +110,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var query = { "lists._id": listID };
     try {
       console.log("delete");
-      await database.collection("Groups").updateOne(query, listToRemove);
+      await database.collection("groups").updateOne(query, listToRemove);
     } catch (err) {
       throw err;
     }
@@ -120,7 +121,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var listToEdit = { $set: { "lists.$.name": newName } };
     var query = { "lists._id": listID };
     try {
-      await database.collection("Groups").updateOne(query, listToEdit);
+      await database.collection("groups").updateOne(query, listToEdit);
     } catch (err) {
       throw err;
     }
@@ -131,7 +132,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var taskToRemove = { $pull: { "lists.$.tasks": { _id: taskID } } };
     var query = { "lists.tasks._id": taskID };
     try {
-      await database.collection("Groups").updateOne(query, taskToRemove);
+      await database.collection("groups").updateOne(query, taskToRemove);
     } catch (err) {
       throw err;
     }
@@ -147,7 +148,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     };
     var query = { "lists.tasks._id": taskID };
     try {
-      await database.collection("Groups").updateOne(query, taskToEdit, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToEdit, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -163,7 +166,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("Groups").updateOne(query, taskToCheck, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -179,24 +184,44 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("Groups").updateOne(query, taskToCheck, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
   }
-  
+
   // Returns the list field from the group with the given groupID
   function getLists(groupID) {
     query = { _id: groupID };
     fields = { _id: 0, name: 0, users: 0 };
     try {
       const result = database
-        .collection("Groups")
+        .collection("groups")
         .find(query)
         .project(fields);
       return result.toArray();
     } catch (err) {
       throw err;
     }
+  }
+
+  // Inserts a new user into the users document with the given username and passwordHash
+  async function registerUser(username, passwordHash) {
+    var userToInsert = {
+      name: username,
+      passwordHash: passwordHash,
+      groups: []
+    };
+    try {
+      await database.collection("users").insertOne(userToInsert);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function getUser(username) {
+    
   }
 });

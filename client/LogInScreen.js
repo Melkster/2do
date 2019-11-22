@@ -13,6 +13,8 @@ import {
 import socket from "./socket";
 import styles from "./styles";
 
+failed_error = "Login failed";
+
 export default class SignInScreen extends Component {
   constructor(props) {
     super(props);
@@ -49,21 +51,37 @@ export default class SignInScreen extends Component {
             style={styles.input}
             onPress={() => this._signInAsync(this.state.username, this.state.password)}
           />
-
-          <Text>{this.state.username}</Text>
-          <Text>{this.state.password}</Text>
+          <Button
+            title={"Create account"}
+            style={styles.input}
+            onPress={() => this._createUserAsync(this.state.username, this.state.password)}
+          />
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     );
   }
 
-  _signInAsync = async (username, password) => {
-    if (!username || !password) return Alert.alert("Login failed", "Please enter your username and password");
-    // socket.emit("authenticate", username, password);
-    // await socket.on("authenticate", userID => (this.props = { userID }));
-    // socket.emit("getGroups", userID);
+  _signInAsync = (username, password) => {
+    if (!username || !password) return Alert.alert(failed_error, "Please enter your username and password");
 
-    await AsyncStorage.setItem("userToken", "signedIn");
-    this.props.navigation.navigate("App");
+    socket.emit("authenticate", username, password);
+    socket.on("authenticate", (userID, err) => {
+      if (err) return Alert.alert(failed_error, err);
+
+      socket.emit("getGroups", userID);
+      socket.on("getGroups", (userID, err) => {
+        if (err) return Alert.alert(failed_error, err);
+        AsyncStorage.setItem("userToken", String(userID));
+        this.props.navigation.navigate("App", { userID });
+      });
+    });
+  };
+
+  _createUserAsync = async (username, password) => {
+    socket.emit("register", username, password);
+    socket.on("register", (userID, err) => {
+      if (err) return Alert.alert(failed_error, err);
+      Alert.alert("Success", "Registered with userID " + userID);
+    });
   };
 }

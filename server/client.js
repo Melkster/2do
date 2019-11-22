@@ -1,10 +1,6 @@
 var io = require("socket.io-client");
-<<<<<<< HEAD
-var socket = io.connect("http://192.168.43.229:3000");
-=======
-var socket = io.connect("http://192.168.43.254:3000");
->>>>>>> socket-connection
-
+//var socket = io.connect("http://192.168.43.229:3000");
+var socket = io.connect("http://localhost:3000");
 var readline = require("readline-sync");
 
 // Add a connect listener
@@ -33,7 +29,17 @@ socket.on("groupCreated", msg => {
   console.log(msg);
 });
 
+socket.on("register", userid => {
+  console.log(userid);
+});
+
+socket.on("authenticate", res => {
+  console.log(res);
+});
 //socket.emit('chat message', readline.question("any message to the group? "), group);
-socket.emit("createGroup", "1000", "100");
+//socket.emit("createGroup", "1000", "100");
 // socket.emit("addTask", "100", "100", readline.question("what task to add? "));
-socket.emit("authenticate", "", "melkersuger");
+//socket.emit("authenticate", "", "melkersuger");
+socket.emit("register", "asdasdasd", "1111");
+socket.emit("authenticate", "asdasdasd", "1111");
+socket.emit("authenticate", "asdasdasd", "22222");

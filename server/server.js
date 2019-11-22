@@ -90,12 +90,16 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
-    socket.on("joinList", listID => {
+    // Event that gets called when user navigates to a list, this joines a socket room
+    // which gets updated everytime any member of the room makes a change
+    socket.on("enterListRoom", listID => {
       socket.join(listID);
       console.log(listID);
-      io.in(listID).emit("has joined", "A user has joined the list-room: " + listID);
+
+      io.in(listID).emit("enterListRoom", "A user has joined the list-room: " + listID);
     });
 
+    // Not used
     socket.on("joinGroup", groupID => {
       socket.join(groupID);
       console.log(groupID);
@@ -201,7 +205,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("leaveGroup", (groupID, userID) => {
-      //TODO: remove user from group
+      //TODO: remove user from group, check if sucessfull
+      dbfunc.leaveGroup(groupID, userID);
+      io.emit("leaveGroup", true);
     });
 
     socket.on("disconnect", () => {
@@ -212,6 +218,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       const hash3 = await bcrypt.hash(password, salt);
       user = users.find(x => x.name == user);
       user["passwordhash"] = hash3;
+      //TODO: change to return hashed password and then send call the register function in dbfunc
     }
 
     async function compare_passwords(passwordhash, password) {
@@ -225,7 +232,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         console.log("user does not exist");
       } else {
         const res = await compare_passwords(found["passwordhash"], password);
-        //console.log(res);
         return res;
       }
     }

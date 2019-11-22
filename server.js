@@ -10,26 +10,13 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   list = await createList(group, "Hej");
   console.log(list);
   task = await addTask(list, "test");
+  addTask(list, "asd");
+  //lists = await getLists(group);
+  //obj = JSON.stringify(lists);
+  //console.log(obj);
+  //editUncheckedTask(list, task, "Då");
   checkTask(list, task);
-  uncheckTask(list, task);
-  // await addTask(list, "asd");
-  // task1 = await addTask(list, "tvätta");
-  // await addTask(list, "städa");
-  // deleteTask(group, list, task1);
-  // console.log(task);
-  // deleteTask(group, list, task);
-  // renameList(y, "Då");
-  // deleteList(y);
-  //z = await createList(x, "Omg");
-  // console.log(y);
-  //renameList(x, z, "Då");
-
   db.close();
-  // dbo.collection("customers").findOne({}, function(err, result) {
-  //   if (err) throw err;
-  //   console.log(result);
-  //   db.close();
-  // });
 
   // Creates a group and inserts it into the database with the given userID
   // Returns the ID of the newly created group
@@ -50,7 +37,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   async function createList(groupID, listName) {
     var id = new objectID();
     var listToInsert = {
-      $push: { lists: { _id: id, name: listName, tasks: [] } }
+      $push: {
+        lists: { _id: id, name: listName, uncheckedTasks: [], checkedTasks: [] }
+      }
     };
     var query = { _id: groupID };
     try {
@@ -66,7 +55,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   async function addTask(listID, value) {
     var id = new objectID();
     var taskToInsert = {
-      $push: { "lists.$.tasks": { _id: id, value: value, checked: false } }
+      $push: {
+        "lists.$.uncheckedTasks": { _id: id, value: value, checked: false }
+      }
     };
     var query = { "lists._id": listID };
     try {
@@ -124,7 +115,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var listToRemove = { $pull: { lists: { _id: listID } } };
     var query = { "lists._id": listID };
     try {
-      console.log("delete");
       database.collection("Groups").updateOne(query, listToRemove);
     } catch (err) {
       throw err;
@@ -142,9 +132,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     }
   }
 
-  // Deletes a task with the given taskID from the list with the given listID
-  function deleteTask(listID, taskID) {
-    var taskToRemove = { $pull: { "lists.$.tasks": { _id: taskID } } };
+  // Deletes a unchecked task with the given taskID from the list with the given listID
+  function deleteUncheckedTask(listID, taskID) {
+    var taskToRemove = { $pull: { "lists.$.uncheckedTasks": { _id: taskID } } };
     var query = { "lists._id": listID };
     try {
       database.collection("Groups").updateOne(query, taskToRemove);
@@ -153,10 +143,37 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     }
   }
 
-  // Changes the value of the taskID in the listID to newValue
-  function editTask(listID, taskID, newValue) {
+  // Deletes a unchecked task with the given taskID from the list with the given listID
+  function deleteCheckedTask(listID, taskID) {
+    var taskToRemove = { $pull: { "lists.$.checkedTasks": { _id: taskID } } };
+    var query = { "lists._id": listID };
+    try {
+      database.collection("Groups").updateOne(query, taskToRemove);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Changes the value of the unchecked task with the given taskID in the listID to newValue
+  function editUncheckedTask(listID, taskID, newValue) {
     var taskToEdit = {
-      $set: { "lists.$[outer].tasks.$[inner].value": newValue }
+      $set: { "lists.$[outer].uncheckedTasks.$[inner].value": newValue }
+    };
+    var arrayFilters = {
+      arrayFilters: [{ "outer._id": listID }, { "inner._id": taskID }]
+    };
+    var query = { "lists._id": listID };
+    try {
+      database.collection("Groups").updateOne(query, taskToEdit, arrayFilters);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Changes the value of the checkek task with the given taskID in the listID to newValue
+  function editCheckedTask(listID, taskID, newValue) {
+    var taskToEdit = {
+      $set: { "lists.$[outer].checkedTasks.$[inner].value": newValue }
     };
     var arrayFilters = {
       arrayFilters: [{ "outer._id": listID }, { "inner._id": taskID }]
@@ -170,16 +187,24 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   }
 
   // Checks the task with the taskID in the listID
-  function checkTask(listID, taskID) {
+  async function checkTask(listID, taskID) {
     var taskToCheck = {
-      $set: { "lists.$[outer].tasks.$[inner].checked": true }
+      $pull: { "lists.$.uncheckedTasks": { _id: taskID } }
     };
-    var arrayFilters = {
-      arrayFilters: [{ "outer._id": listID }, { "inner._id": taskID }]
+    // var filters = {
+    //   projection: { _id: 0, name: 0, users: 0, "lists._id": 0, "lists.name": 0, "lists.checkedTasks": 0 }
+    // };
+    var filters = {
+      projection: {"lists.uncheckedTasks._id": 1}
     };
-    var query = { "lists._id": listID };
+    // var query = { "lists._id": listID };//, "lists.$[outer].uncheckedTasks.$[inner]._id": taskID};
+    var query = { "lists.uncheckedTasks._id": taskID}
     try {
-      database.collection("Groups").updateOne(query, taskToCheck, arrayFilters);
+      const result = await database
+        .collection("Groups")
+        .findOneAndUpdate(query, taskToCheck);//, filters);
+      // obj = result.toArray();
+      console.log(JSON.stringify(result.value));
     } catch (err) {
       throw err;
     }
@@ -196,6 +221,21 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     var query = { "lists._id": listID };
     try {
       database.collection("Groups").updateOne(query, taskToCheck, arrayFilters);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Returns the list field from the group with the given groupID
+  function getLists(groupID) {
+    query = { _id: groupID };
+    fields = { _id: 0, name: 0, users: 0 };
+    try {
+      const result = database
+        .collection("Groups")
+        .find(query)
+        .project(fields);
+      return result.toArray();
     } catch (err) {
       throw err;
     }

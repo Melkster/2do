@@ -21,5 +21,6 @@ export default class Task extends Component<{}> {
   this.setState({
     checked: !this.state.checked
   })
+  this.props.handler
 }
 }

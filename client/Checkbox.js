@@ -8,7 +8,7 @@ export default class Checkbox extends Component {
 
   render() {
     return (
-      <TouchableOpacity style={{padding: 15}} onPress={this.props.handler}>
+      <TouchableOpacity style={styles.checkbox} onPress={this.props.handler}>
         <Image style={{width: 20, height: 20}} source={this.chooseImage(this.props.checked)} />
       </TouchableOpacity>);
   }

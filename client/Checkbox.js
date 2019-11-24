@@ -5,19 +5,19 @@ import unchecked from "./assets/unchecked.png";
 import styles from "./styles.js";
 
 export default class Checkbox extends Component {
-
   render() {
     return (
       <TouchableOpacity style={styles.checkbox} onPress={this.props.handler}>
-        <Image style={{width: 20, height: 20}} source={this.chooseImage(this.props.checked)} />
-      </TouchableOpacity>);
+        <Image style={{ width: 20, height: 20 }} source={this.chooseImage(this.props.checked)} />
+      </TouchableOpacity>
+    );
   }
 
-  chooseImage = (isChecked) => {
+  chooseImage = isChecked => {
     if (isChecked) {
-      return(checked)
+      return checked;
     } else {
-      return (unchecked)
+      return unchecked;
     }
   };
 }

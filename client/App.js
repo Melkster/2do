@@ -11,7 +11,7 @@ import TasksScreen from "./TasksScreen";
 import SignInScreen from "./SignInScreen";
 import Test from "./Test.js";
 
-const AppStack = createStackNavigator({Groups: GroupsScreen, Lists: ListsScreen, Tasks: TasksScreen});
+const AppStack = createStackNavigator({ Groups: GroupsScreen, Lists: ListsScreen, Tasks: TasksScreen });
 const AuthStack = createStackNavigator({ SignIn: SignInScreen });
 
 export default createAppContainer(

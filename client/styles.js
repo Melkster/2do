@@ -1,4 +1,4 @@
-import {StyleSheet} from "react-native";
+import { StyleSheet } from "react-native";
 
 //TO DO: divide up "styles".
 const styles = StyleSheet.create({
@@ -11,16 +11,16 @@ const styles = StyleSheet.create({
     padding: 15
   },
   SectionHeaderStyle: {
-    backgroundColor: '#CDDC89',
+    backgroundColor: "#CDDC89",
     fontSize: 20,
     padding: 5,
-    color: '#fff',
+    color: "#fff"
   },
   SectionListItemStyle: {
     fontSize: 15,
-    color: '#000',
-    backgroundColor: '#F5F5F5',
-    flexDirection: 'row'
+    color: "#000",
+    backgroundColor: "#F5F5F5",
+    flexDirection: "row"
   },
   SectionListTextStyle: {
     flex: 1,
@@ -30,8 +30,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     padding: 15
-  },
-
+  }
 });
 
 export default styles;

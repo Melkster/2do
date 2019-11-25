@@ -10,8 +10,11 @@ module.exports = {
   // Returns the ID of the newly created group
   createGroup: async function(database, userID, groupName) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
+    var groupQuery = { _id: userID };
     try {
       const result = await database.collection("groups").insertOne(groupToInsert);
+      var groupIDToInsert = { $push: { groups: result.ops[0]._id } };
+      await database.collection("users").updateOne(groupQuery, groupIDToInsert);
       return result.ops[0]._id;
     } catch (err) {
       throw err;
@@ -49,11 +52,14 @@ module.exports = {
       throw err;
     }
   },
-
+  //-------
   // Deletes a group with the given groupID
   deleteGroup: async function(database, groupID) {
+    var usersToUpdate = { $pull: { groups: groupID } };
+    var query = { groups: groupID };
     try {
       await database.collection("groups").deleteOne({ _id: groupID });
+      await database.collection("users").updateMany(query, usersToUpdate);
     } catch (err) {
       throw err;
     }
@@ -63,8 +69,11 @@ module.exports = {
   inviteUser: async function(database, groupID, userID) {
     var userToInsert = { $push: { users: userID } };
     var query = { _id: groupID };
+    var groupToInsert = { $push: { groups: groupID } };
+    var groupQuery = { _id: userID };
     try {
       await database.collection("groups").updateOne(query, userToInsert);
+      await database.collection("users").updateOne(groupQuery, groupToInsert);
     } catch (err) {
       throw err;
     }
@@ -74,8 +83,11 @@ module.exports = {
   leaveGroup: async function(database, groupID, userID) {
     var userToRemove = { $pull: { users: userID } };
     var query = { _id: groupID };
+    var groupToRemove = { $pull: { groups: groupID } };
+    var userQuery = { groups: groupID };
     try {
       await database.collection("groups").updateOne(query, userToRemove);
+      await database.collection("users").updateOne(userQuery, groupToRemove);
     } catch (err) {
       throw err;
     }
@@ -174,6 +186,7 @@ module.exports = {
     }
   },
 
+  // TODO not correct version on github??
   // Returns the list field from the group with the given groupID
   getLists: function(database, groupID) {
     query = { _id: groupID };

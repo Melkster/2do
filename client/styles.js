@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-//TO DO: divide up "styles".
+//TODO: divide up "styles" better.
 const styles = StyleSheet.create({
   stage: {
     backgroundColor: "#EFEFF4",
@@ -30,6 +30,15 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     padding: 15
+  },
+  checkedTaskStyle: {
+    textDecorationLine: "line-through",
+    color: "grey"
+  },
+  uncheckedTaskStyle: {},
+  addButtonHeaderStyle: {
+    fontSize: 40,
+    fontWeight: 'bold'
   }
 });
 

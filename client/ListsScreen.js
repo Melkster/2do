@@ -1,16 +1,23 @@
 import React, { Component } from "react";
-import { Image, ScrollView, View, SectionList, Text, TouchableOpacity } from "react-native";
+import { Image, Button, ScrollView, View, SectionList, Text, TouchableOpacity } from "react-native";
 import { Cell, Section, TableView } from "react-native-tableview-simple";
 import listLogo from "./assets/listSymbol.png";
 import data from "./data.json";
 import styles from "./styles.js";
 
 export default class ListsScreen extends Component {
+  // set the title for the page (from props)
   static navigationOptions = ({ navigation }) => {
     return {
-      title: navigation.getParam("title")
+      title: navigation.getParam("title"),
+      // TODO: change the button to an icon
+      headerRight: <Button title={"+"} onPress={navigation.getParam('addButton')} style={styles.addButtonHeader}/>
     };
   };
+
+  componentDidMount() {
+    this.props.navigation.setParams({ addButton: this.addList });
+    }
 
   render() {
     // get the lists for the choosen group from DB
@@ -39,5 +46,9 @@ export default class ListsScreen extends Component {
         />
       </View>
     );
+  }
+
+  addList = () => {
+    console.log("add list");
   }
 }

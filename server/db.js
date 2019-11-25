@@ -8,7 +8,7 @@ var objectID = require("mongodb").ObjectID;
 module.exports = {
   // Creates a group and inserts it into the database with the given userID
   // Returns the ID of the newly created group
-  createGroup: async function(userID, groupName) {
+  createGroup: async function(database, userID, groupName) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
     try {
       const result = await database.collection("groups").insertOne(groupToInsert);
@@ -20,7 +20,7 @@ module.exports = {
 
   // Inserts a list into the given group ID with given list name
   // Returns the ID of the newly created list
-  createList: async function(groupID, listName) {
+  createList: async function(database, groupID, listName) {
     var id = new objectID();
     var listToInsert = {
       $push: { lists: { _id: id, name: listName, tasks: [] } }
@@ -36,7 +36,7 @@ module.exports = {
 
   // Adds a task to the provided listID with the provided text
   // Returns the ID of the newly created task
-  addTask: async function(listID, value) {
+  addTask: async function(database, listID, value) {
     var id = new objectID();
     var taskToInsert = {
       $push: { "lists.$.tasks": { _id: id, value: value, checked: false } }
@@ -51,7 +51,7 @@ module.exports = {
   },
 
   // Deletes a group with the given groupID
-  deleteGroup: async function(groupID) {
+  deleteGroup: async function(database, groupID) {
     try {
       await database.collection("groups").deleteOne({ _id: groupID });
     } catch (err) {
@@ -60,7 +60,7 @@ module.exports = {
   },
 
   // Adds a user with the given userID to the given groupID
-  inviteUser: async function(groupID, userID) {
+  inviteUser: async function(database, groupID, userID) {
     var userToInsert = { $push: { users: userID } };
     var query = { _id: groupID };
     try {
@@ -71,7 +71,7 @@ module.exports = {
   },
 
   // Removes the user with the given userID from the given groupID
-  leaveGroup: async function(groupID, userID) {
+  leaveGroup: async function(database, groupID, userID) {
     var userToRemove = { $pull: { users: userID } };
     var query = { _id: groupID };
     try {
@@ -82,7 +82,7 @@ module.exports = {
   },
 
   // Changes the name of the given groupID to newName
-  renameGroup: async function(groupID, newName) {
+  renameGroup: async function(database, groupID, newName) {
     var newName = { $set: { name: newName } };
     var query = { _id: groupID };
     try {
@@ -93,7 +93,7 @@ module.exports = {
   },
 
   // Deletes a list with the given listID from the given groupID
-  deleteList: async function(listID) {
+  deleteList: async function(database, listID) {
     var listToRemove = { $pull: { lists: { _id: listID } } };
     var query = { "lists._id": listID };
     try {
@@ -105,7 +105,7 @@ module.exports = {
   },
 
   // Renames a list with the given listID with the new newName
-  renameList: async function(listID, newName) {
+  renameList: async function(database, listID, newName) {
     var listToEdit = { $set: { "lists.$.name": newName } };
     var query = { "lists._id": listID };
     try {
@@ -116,7 +116,7 @@ module.exports = {
   },
 
   // Deletes a task with the given taskID
-  deleteTask: async function(taskID) {
+  deleteTask: async function(database, taskID) {
     var taskToRemove = { $pull: { "lists.$.tasks": { _id: taskID } } };
     var query = { "lists.tasks._id": taskID };
     try {
@@ -127,7 +127,7 @@ module.exports = {
   },
 
   // Changes the value of the taskID in the listID to newValue
-  editTask: async function(listID, taskID, newValue) {
+  editTask: async function(database, listID, taskID, newValue) {
     var taskToEdit = {
       $set: { "lists.$[outer].tasks.$[inner].value": newValue }
     };
@@ -143,7 +143,7 @@ module.exports = {
   },
 
   // Checks the task with the taskID in the listID
-  checkTask: async function(listID, taskID) {
+  checkTask: async function(database, listID, taskID) {
     var taskToCheck = {
       $set: { "lists.$[outer].tasks.$[inner].checked": true }
     };
@@ -159,7 +159,7 @@ module.exports = {
   },
 
   // Unchecks the task with the taskID in the listID
-  uncheckTask: async function(listID, taskID) {
+  uncheckTask: async function(database, listID, taskID) {
     var taskToCheck = {
       $set: { "lists.$[outer].tasks.$[inner].checked": false }
     };
@@ -175,7 +175,7 @@ module.exports = {
   },
 
   // Returns the list field from the group with the given groupID
-  getLists: function(groupID) {
+  getLists: function(database, groupID) {
     query = { _id: groupID };
     fields = { _id: 0, name: 0, users: 0 };
     try {
@@ -190,7 +190,7 @@ module.exports = {
   },
 
   // Inserts a new user into the users document with the given username and passwordHash
-  registerUser: async function(username, passwordHash) {
+  registerUser: async function(database, username, passwordHash) {
     var userToInsert = {
       name: username,
       passwordHash: passwordHash,

@@ -61,7 +61,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       if (!username) {
         io.emit("authenticate", null, "missing username");
       } else if (!password) {
-        io.emit("authentiacte", null, "missing password");
+        io.emit("authenticate", null, "missing password");
       } else {
         (async () => {
           var res = await authenticate(username, password);
@@ -70,7 +70,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
             console.log("succes boiiiii");
             io.emit("authenticate", userid, null);
           } else {
-            io.emit("authenticate", "Autentication failed");
+            io.emit("authenticate", null, "Autentication failed");
           }
         })();
       }
@@ -126,6 +126,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+    //----------------------------------------------------------
+
     socket.on("getLists", groupID => {
       try {
         io.emit("getLists", 1);
@@ -135,9 +137,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       //TODO: return list of lists for a group
     });
 
-    socket.on("deleteTask", (listID, taskID, userID) => {
+    socket.on("deleteTask", taskID => {
       try {
-        dbfunc.deleteTask(listID, taskID);
+        dbfunc.deleteTask(database, taskID);
         io.emit("deleteTask", true);
       } catch (e) {
         console.log(e);
@@ -145,20 +147,25 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       //TODO: remove task from database
     });
 
-    socket.on("deleteList", (groupID, listID) => {
+    socket.on("deleteList", listID => {
       try {
-        dbfunc.deleteList(listID);
+        dbfunc.deleteList(database, listID);
         io.emit("deleteList", true);
       } catch (e) {
         console.log(e);
       }
-      //TODO: delete list from database
     });
 
-    socket.on("deleteGroup", (groupID, userID) => {
+    socket.on("deleteGroup", groupID => {
       //TODO: delete group from database
-      dbfunc.deleteGroup(groupID);
-      io.emit("deleteGroup", true);
+      (async () => {
+        try {
+          dbfunc.deleteGroup(database, groupID);
+          io.emit("deleteGroup", true);
+        } catch (e) {
+          console.log(e);
+        }
+      })();
     });
 
     socket.on("addTask", (groupID, listID, value) => {
@@ -175,8 +182,14 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     socket.on("createList", (groupID, value) => {
       //TODO: Add list to database
-      var listID = dbfunc.createList(database, groupID, value);
-      io.emit("createList", listID);
+      (async () => {
+        try {
+          var listID = dbfunc.createList(database, groupID, value);
+          io.emit("createList", listID);
+        } catch (e) {
+          console.log(e);
+        }
+      })();
     });
 
     socket.on("createGroup", (userID, groupName) => {

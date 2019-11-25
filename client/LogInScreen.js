@@ -3,12 +3,10 @@ import {
   Alert,
   AsyncStorage,
   Button,
+  TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback
+  TextInput
 } from "react-native";
 import socket from "./socket";
 import styles from "./styles";

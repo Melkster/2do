@@ -9,7 +9,6 @@ import GroupsScreen from "./GroupsScreen";
 import ListsScreen from "./ListsScreen";
 import TasksScreen from "./TasksScreen";
 import LogInScreen from "./LogInScreen";
-import Test from "./Test.js";
 
 const AppStack = createStackNavigator({ Groups: GroupsScreen, Lists: ListsScreen, Tasks: TasksScreen });
 const AuthStack = createStackNavigator({ SignIn: LogInScreen });

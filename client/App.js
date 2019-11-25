@@ -8,11 +8,11 @@ import AuthLoadingScreen from "./AuthLoadingScreen";
 import GroupsScreen from "./GroupsScreen";
 import ListsScreen from "./ListsScreen";
 import TasksScreen from "./TasksScreen";
-import SignInScreen from "./SignInScreen";
+import LogInScreen from "./LogInScreen";
 import Test from "./Test.js";
 
 const AppStack = createStackNavigator({ Groups: GroupsScreen, Lists: ListsScreen, Tasks: TasksScreen });
-const AuthStack = createStackNavigator({ SignIn: SignInScreen });
+const AuthStack = createStackNavigator({ SignIn: LogInScreen });
 
 export default createAppContainer(
   createSwitchNavigator(

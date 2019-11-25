@@ -18,6 +18,7 @@ export default class GroupsScreen extends Component {
       <View>
         <SectionList
           sections={[{ data: groups }]}
+          // comment
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.SectionListItemStyle}

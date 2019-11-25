@@ -3,12 +3,10 @@ import {
   Alert,
   AsyncStorage,
   Button,
+  TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback
+  TextInput
 } from "react-native";
 import socket from "./socket";
 import styles from "./styles";
@@ -20,8 +18,8 @@ export default class LogInScreen extends Component {
     super(props);
 
     this.state = {
-      username: "",
-      password: ""
+      username: "foo",
+      password: "bar"
     };
   }
 

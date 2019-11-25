@@ -1,19 +1,9 @@
 import React, { Component } from "react";
-import {
-  Alert,
-  AsyncStorage,
-  Button,
-  Keyboard,
-  KeyboardAvoidingView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback
-} from "react-native";
+import { ActivityIndicator, AsyncStorage, Button, StatusBar, StyleSheet, View } from "react-native";
 import socket from "./socket";
 import styles from "./styles";
 
-export default class SignInScreen extends Component {
+export default class LogInScreen extends Component {
   constructor(props) {
     super(props);
 

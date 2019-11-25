@@ -29,6 +29,8 @@ module.exports = {
       $push: { lists: { _id: id, name: listName, tasks: [] } }
     };
     var query = { _id: groupID };
+    console.log(query);
+    console.log(listToInsert);
     try {
       await database.collection("groups").updateOne(query, listToInsert);
       return id;

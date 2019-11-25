@@ -39,13 +39,7 @@ var users = [
 //Connect to databse
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
-  //var x = await dbfunc.createGroup(database, "5", "Grupp 8");
-  //var y = await dbfunc.createGroup(database, "5", "Grupp 1");
-  // var id1 = dbfunc.createList(database, x, "aaaa");
-  // var id2 = dbfunc.createList(database, x, "bbbb");
-  // var id3 = dbfunc.addTask(database, x, id2, "mat");
-  // var id4 = dbfunc.addTask(database, x, id2, "mera");
-  // var id5 = dbfunc.addTask(database, x, id1, "annat");
+  //console.log(database);
 
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
@@ -130,31 +124,62 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     //----------------------------------------------------------
-
+    //TODO: return list of lists for a group
     socket.on("getLists", groupID => {
       try {
-        io.emit("getLists", 1);
+        io.emit("getLists", 1, null);
       } catch (e) {
+        io.emit("getLists", null, "Could not get lists");
         console.log(e);
       }
-      //TODO: return list of lists for a group
     });
 
-    socket.on("deleteTask", taskID => {
+    socket.on("addTask", async (listID, value) => {
+      try {
+        var taskID = await dbfunc.addTask(database, new objectID(listID), value);
+        io.in(listID).emit("addTask", taskID, null);
+      } catch (e) {
+        io.emit("addTask", null, "could not add task");
+        console.log(e);
+      }
+    });
+
+    socket.on("createList", async (groupID, value) => {
+      try {
+        var listID = await dbfunc.createList(database, new objectID(groupID), value);
+        io.emit("createList", listID, null);
+      } catch (e) {
+        io.emit("createList", null, "could not create list");
+        console.log(e);
+      }
+    });
+
+    socket.on("createGroup", async (userID, groupName) => {
+      try {
+        var groupID = await dbfunc.createGroup(database, userID, groupName);
+        io.emit("createGroup", groupID, null);
+      } catch (e) {
+        console.log(e);
+        io.emit("createGroup", null, "Could not create group");
+      }
+    });
+
+    socket.on("deleteTask", async taskID => {
       try {
         dbfunc.deleteTask(database, taskID);
-        io.emit("deleteTask", true);
+        io.emit("deleteTask", true, null);
       } catch (e) {
+        io.emit("deleteTask", null, "Could not delete task");
         console.log(e);
       }
-      //TODO: remove task from database
     });
 
-    socket.on("deleteList", listID => {
+    socket.on("deleteList", async listID => {
       try {
         dbfunc.deleteList(database, listID);
-        io.emit("deleteList", true);
+        io.emit("deleteList", true, null);
       } catch (e) {
+        io.emit("deleteList", null, "Could not delete list");
         console.log(e);
       }
     });
@@ -164,62 +189,41 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       (async () => {
         try {
           dbfunc.deleteGroup(database, groupID);
-          io.emit("deleteGroup", true);
+          io.emit("deleteGroup", true, null);
         } catch (e) {
+          io.emit("deleteGroup", null, "Could not delete Group");
           console.log(e);
         }
       })();
     });
 
-    socket.on("addTask", (groupID, listID, value) => {
-      var taskID = dbfunc.addTask(database, groupID, listID, value);
-      err = true;
-      if (err) {
-        console.log("could not insert into database");
-        io.emit("error", "could not insert into database");
-      } else {
-        console.log("succesfull");
-        io.in(listID).emit("successful add", taskID);
-      }
-    });
-
-    socket.on("createList", (groupID, value) => {
-      //TODO: Add list to database
-      (async () => {
-        try {
-          var listID = dbfunc.createList(database, groupID, value);
-          io.emit("createList", listID);
-        } catch (e) {
-          console.log(e);
-        }
-      })();
-    });
-
-    socket.on("createGroup", (userID, groupName) => {
-      (async () => {
-        try {
-          var groupID = await dbfunc.createGroup(database, userID, groupName);
-          console.log(groupID);
-          io.emit("createGroup", groupID);
-        } catch (e) {
-          console.log(e);
-          io.emit("error", e);
-        }
-      })();
-    });
-
-    socket.on("checkTask", (listID, taskID, userID) => {
+    socket.on("checkTask", (listID, taskID) => {
       //TODO: check a task given an ID
-      dbfunc.checkTask(listID, taskID, userID);
-      io.emit("checkTask", taskID);
+      (async () => {
+        try {
+          dbfunc.checkTask(database, listID, taskID);
+          io.emit("checkTask", taskID, null);
+        } catch (e) {
+          io.emit("checkTask", null, "Could not check task");
+          console.log(e);
+        }
+      })();
     });
 
-    socket.on("uncheckTask", (listID, taskID, userID) => {
+    socket.on("uncheckTask", (listID, taskID) => {
       //TODO: uncheck a task given an
-      dbfunc.uncheckTask(listID, taskID, userID);
-      io.emit("uncheckTask", taskID);
+      (async () => {
+        try {
+          dbfunc.uncheckTask(database, listID, taskID);
+          io.emit("uncheckTask", taskID, null);
+        } catch (e) {
+          io.emit("uncheckTask", null, "Could not uncheck task");
+          console.log(e);
+        }
+      })();
     });
 
+    //------------------
     socket.on("renameTask", (listID, taskID, userID, value) => {
       //TODO: Edit a task given and ID and new value
       dbfunc.renameTask(listID, taskID, value);

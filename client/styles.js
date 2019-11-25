@@ -7,6 +7,19 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 20
   },
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20
+  },
+  input: {
+    width: 200,
+    height: 44,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "gray",
+    marginBottom: 10
+  },
   checkbox: {
     padding: 15
   },

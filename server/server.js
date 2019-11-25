@@ -1,3 +1,7 @@
+// TODO: try catch statements for all the events
+// database functions export
+// rewrite with real database functions
+
 const app = require("express")();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
@@ -10,7 +14,7 @@ var objectID = require("mongodb").ObjectID;
 var url = "mongodb://localhost:27017/data/db";
 
 var dbfunc = require("./db");
-// //var database = new db();
+//var database = new db();
 
 //console.log(typeof db.createGroup);
 var users = [
@@ -35,7 +39,6 @@ var users = [
 //Connect to databse
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
-
   //var x = await dbfunc.createGroup(database, "5", "Grupp 8");
   //var y = await dbfunc.createGroup(database, "5", "Grupp 1");
   // var id1 = dbfunc.createList(database, x, "aaaa");
@@ -56,15 +59,16 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("authenticate", (username, password) => {
       console.log("authenticate", username, password);
       if (!username) {
-        io.emit("authenticate", "missing username");
+        io.emit("authenticate", null, "missing username");
       } else if (!password) {
-        io.emit("authentiacte", "missing password");
+        io.emit("authentiacte", null, "missing password");
       } else {
         (async () => {
           var res = await authenticate(username, password);
+          var userid = 1337; // MOCK
           if (res) {
             console.log("succes boiiiii");
-            io.emit("authenticate", null);
+            io.emit("authenticate", userid, null);
           } else {
             io.emit("authenticate", "Autentication failed");
           }
@@ -95,17 +99,19 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("enterListRoom", listID => {
       socket.join(listID);
       console.log(listID);
-
       io.in(listID).emit("enterListRoom", "A user has joined the list-room: " + listID);
     });
 
-    // Not used
+    // Not used for now
+    // TODO: remove if we decide to not use this at all
     socket.on("joinGroup", groupID => {
       socket.join(groupID);
       console.log(groupID);
       io.in(groupID).emit("has joined", "A user has joined the group-room: " + groupID);
     });
 
+    // Used only for debug purposes
+    // TODO: remove later
     socket.on("chatMessage", (msg, group) => {
       io.in(group).emit("message", msg);
       console.log("Message: ", msg);
@@ -113,24 +119,40 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     socket.on("getGroups", () => {
       //TODO: return list of groups for a user
-      io.emit("getGroups", 1);
+      try {
+        io.emit("getGroups", 1);
+      } catch (e) {
+        console.log(e);
+      }
     });
 
     socket.on("getLists", groupID => {
+      try {
+        io.emit("getLists", 1);
+      } catch (e) {
+        console.log(e);
+      }
       //TODO: return list of lists for a group
-      io.emit("getLists", 1);
     });
 
     socket.on("deleteTask", (listID, taskID, userID) => {
+      try {
+        dbfunc.deleteTask(listID, taskID);
+        io.emit("deleteTask", true);
+      } catch (e) {
+        console.log(e);
+      }
       //TODO: remove task from database
-      dbfunc.deleteTask(listID, taskID);
-      io.emit("deleteTask", true);
     });
 
     socket.on("deleteList", (groupID, listID) => {
+      try {
+        dbfunc.deleteList(listID);
+        io.emit("deleteList", true);
+      } catch (e) {
+        console.log(e);
+      }
       //TODO: delete list from database
-      dbfunc.deleteList(listID);
-      io.emit("deleteList", true);
     });
 
     socket.on("deleteGroup", (groupID, userID) => {
@@ -227,6 +249,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     }
 
     async function authenticate(username, password) {
+      //TODO: change to database, use getUser func to aquire password hash
+      // should return userid so authentication function can emit it to user on login
       const found = users.find(x => x.name == username);
       if (!found) {
         console.log("user does not exist");

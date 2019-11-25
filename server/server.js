@@ -64,13 +64,16 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         io.emit("authenticate", null, "missing password");
       } else {
         (async () => {
-          var res = await authenticate(username, password);
-          var userid = 1337; // MOCK
-          if (res) {
-            console.log("succes boiiiii");
-            io.emit("authenticate", userid, null);
-          } else {
-            io.emit("authenticate", null, "Autentication failed");
+          try {
+            var res = await authenticate(username, password);
+            var userid = 1337; // MOCK
+            if (res) {
+              io.emit("authenticate", userid, null);
+            } else {
+              io.emit("authenticate", null, "Autentication failed");
+            }
+          } catch (e) {
+            console.log(e);
           }
         })();
       }
@@ -264,9 +267,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     async function authenticate(username, password) {
       //TODO: change to database, use getUser func to aquire password hash
       // should return userid so authentication function can emit it to user on login
-      const found = users.find(x => x.name == username);
+      const found = await users.find(x => x.name == username);
       if (!found) {
         console.log("user does not exist");
+        return false;
       } else {
         const res = await compare_passwords(found["passwordhash"], password);
         return res;

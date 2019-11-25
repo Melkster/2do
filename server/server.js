@@ -1,6 +1,7 @@
 // TODO: try catch statements for all the events
 // database functions export
 // rewrite with real database functions
+// MAKE TO NEW OBJECT IDS THINYG FOR ALL THE FUCKING FUNCTIONS
 
 const app = require("express")();
 const http = require("http").Server(app);
@@ -50,26 +51,24 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     //
     // returns authenticate event with an error message if error occured and null if successfull
     // TODO: use real database instead of mock
-    socket.on("authenticate", (username, password) => {
+    socket.on("authenticate", async (username, password) => {
       console.log("authenticate", username, password);
       if (!username) {
         io.emit("authenticate", null, "missing username");
       } else if (!password) {
         io.emit("authenticate", null, "missing password");
       } else {
-        (async () => {
-          try {
-            var res = await authenticate(username, password);
-            var userid = 1337; // MOCK
-            if (res) {
-              io.emit("authenticate", userid, null);
-            } else {
-              io.emit("authenticate", null, "Autentication failed");
-            }
-          } catch (e) {
-            console.log(e);
+        try {
+          var res = await authenticate(username, password);
+          var userid = 1337; // MOCK
+          if (res) {
+            io.emit("authenticate", userid, null);
+          } else {
+            io.emit("authenticate", null, "Autentication failed");
           }
-        })();
+        } catch (e) {
+          console.log(e);
+        }
       }
     });
 
@@ -184,43 +183,37 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
-    socket.on("deleteGroup", groupID => {
+    socket.on("deleteGroup", async groupID => {
       //TODO: delete group from database
-      (async () => {
-        try {
-          dbfunc.deleteGroup(database, groupID);
-          io.emit("deleteGroup", true, null);
-        } catch (e) {
-          io.emit("deleteGroup", null, "Could not delete Group");
-          console.log(e);
-        }
-      })();
+      try {
+        dbfunc.deleteGroup(database, groupID);
+        io.emit("deleteGroup", true, null);
+      } catch (e) {
+        io.emit("deleteGroup", null, "Could not delete Group");
+        console.log(e);
+      }
     });
 
-    socket.on("checkTask", (listID, taskID) => {
+    socket.on("checkTask", async (listID, taskID) => {
       //TODO: check a task given an ID
-      (async () => {
-        try {
-          dbfunc.checkTask(database, listID, taskID);
-          io.emit("checkTask", taskID, null);
-        } catch (e) {
-          io.emit("checkTask", null, "Could not check task");
-          console.log(e);
-        }
-      })();
+      try {
+        dbfunc.checkTask(database, listID, taskID);
+        io.emit("checkTask", taskID, null);
+      } catch (e) {
+        io.emit("checkTask", null, "Could not check task");
+        console.log(e);
+      }
     });
 
-    socket.on("uncheckTask", (listID, taskID) => {
+    socket.on("uncheckTask", async (listID, taskID) => {
       //TODO: uncheck a task given an
-      (async () => {
-        try {
-          dbfunc.uncheckTask(database, listID, taskID);
-          io.emit("uncheckTask", taskID, null);
-        } catch (e) {
-          io.emit("uncheckTask", null, "Could not uncheck task");
-          console.log(e);
-        }
-      })();
+      try {
+        dbfunc.uncheckTask(database, listID, taskID);
+        io.emit("uncheckTask", taskID, null);
+      } catch (e) {
+        io.emit("uncheckTask", null, "Could not uncheck task");
+        console.log(e);
+      }
     });
 
     //------------------

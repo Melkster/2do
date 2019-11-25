@@ -55,3 +55,7 @@ socket.on("createGroup", (groupID, err) => {
 socket.on("createList", (listID, err) => {
   socket.emit("addTask", listID, "ASSDASDAS");
 });
+
+socket.on("addTask", (taskID, err) => {
+  socket.emit("deleteTask", taskID);
+});

@@ -6,6 +6,7 @@ import data from "./data.json";
 import styles from "./styles.js";
 
 export default class ListsScreen extends Component {
+  // set the title for the page (from props)
   static navigationOptions = ({ navigation }) => {
     return {
       title: navigation.getParam("title")

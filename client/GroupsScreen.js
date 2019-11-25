@@ -17,8 +17,9 @@ export default class GroupsScreen extends Component {
     return (
       <View>
         <SectionList
+          // we only have one section with the users groups
           sections={[{ data: groups }]}
-          // comment
+          // "item" corresponds to a group in the section. When clicked we navigate to the lists of that group
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.SectionListItemStyle}

@@ -5,11 +5,15 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "mongo"
+      "start": "nodemon server.js"
   },
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^3.0.7",
+    "mongodb": "^3.3.4",
     "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
   }
 }

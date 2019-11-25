@@ -15,7 +15,7 @@ import styles from "./styles";
 
 failed_error = "Login failed";
 
-export default class SignInScreen extends Component {
+export default class LogInScreen extends Component {
   constructor(props) {
     super(props);
 
@@ -49,7 +49,7 @@ export default class SignInScreen extends Component {
           <Button
             title={"Login"}
             style={styles.input}
-            onPress={() => this._signInAsync(this.state.username, this.state.password)}
+            onPress={() => this._logInAsync(this.state.username, this.state.password)}
           />
           <Button
             title={"Create account"}
@@ -61,7 +61,7 @@ export default class SignInScreen extends Component {
     );
   }
 
-  _signInAsync = (username, password) => {
+  _logInAsync = (username, password) => {
     if (!username || !password) return Alert.alert(failed_error, "Please enter your username and password");
 
     socket.emit("authenticate", username, password);

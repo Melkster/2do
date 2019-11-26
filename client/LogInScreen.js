@@ -6,7 +6,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  TextInput
+  TextInput,
+  View
 } from "react-native";
 import socket from "./socket";
 import styles from "./styles";
@@ -31,29 +32,31 @@ export default class LogInScreen extends Component {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView behavior="height" style={styles.container} onPress={Keyboard.dismiss}>
-          <TextInput
-            value={this.state.username}
-            onChangeText={username => this.setState({ username })}
-            placeholder={"Username"}
-            style={styles.input}
-          />
-          <TextInput
-            value={this.state.password}
-            onChangeText={password => this.setState({ password })}
-            placeholder={"Password"}
-            secureTextEntry={true}
-            style={styles.input}
-          />
-          <Button
-            title={"Login"}
-            style={styles.input}
-            onPress={() => this._logInAsync(this.state.username, this.state.password)}
-          />
-          <Button
-            title={"Create account"}
-            style={styles.input}
-            onPress={() => this._createUserAsync(this.state.username, this.state.password)}
-          />
+          <View>
+            <TextInput
+              value={this.state.username}
+              onChangeText={username => this.setState({ username })}
+              placeholder={"Username"}
+              style={styles.input}
+            />
+            <TextInput
+              value={this.state.password}
+              onChangeText={password => this.setState({ password })}
+              placeholder={"Password"}
+              secureTextEntry={true}
+              style={styles.input}
+            />
+            <Button
+              title={"Login"}
+              style={styles.input}
+              onPress={() => this._logInAsync(this.state.username, this.state.password)}
+            />
+            <Button
+              title={"Create account"}
+              style={styles.input}
+              onPress={() => this.props.navigation.navigate("CreateAccount")}
+            />
+          </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     );
@@ -72,14 +75,6 @@ export default class LogInScreen extends Component {
         AsyncStorage.setItem("userToken", String(userID));
         this.props.navigation.navigate("App", { userID });
       });
-    });
-  };
-
-  _createUserAsync = async (username, password) => {
-    socket.emit("register", username, password);
-    socket.on("register", (userID, err) => {
-      if (err) return Alert.alert(failed_error, err);
-      Alert.alert("Success", "Registered with userID " + userID);
     });
   };
 }

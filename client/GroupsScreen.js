@@ -33,9 +33,7 @@ export default class GroupsScreen extends Component {
           )}
           keyExtractor={(group, index) => index}
         />
-        <View style={styles.container}>
-          <Button title="Sign me out" onPress={this._signOutAsync} />
-        </View>
+        <Button title="Sign me out" onPress={this._signOutAsync} />
       </View>
     );
   }

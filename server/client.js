@@ -32,8 +32,8 @@ socket.on("createList", (listID, err) => {
 });
 
 socket.emit("register", "axel", "123123");
+socket.emit("authenticate", "axel", "12a3");
 socket.emit("authenticate", "axel", "123123");
-
 socket.on("authenticate", (id, err) => {
   console.log(id, err);
 });

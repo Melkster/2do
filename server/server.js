@@ -15,27 +15,6 @@ var objectID = require("mongodb").ObjectID;
 var url = "mongodb://localhost:27017/data/db";
 
 var dbfunc = require("./db");
-//var database = new db();
-
-//console.log(typeof db.createGroup);
-var users = [
-  {
-    name: "foo",
-    passwordhash: "aa"
-  },
-  {
-    name: "michael",
-    passwordhash: "bb"
-  },
-  {
-    name: "axel",
-    passwordhash: "cc"
-  },
-  {
-    name: "vanja",
-    passwordhash: "dd"
-  }
-];
 
 //Connect to databse
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
@@ -48,7 +27,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // which gets updated everytime any member of the room makes a change
     // remove listID in print later
     socket.on("enterListRoom", listID => {
-      var id = new objectID(listID);
+      var id = listID;
       socket.join(id);
       io.in(id).emit("enterListRoom", "A user has joined the list-room: " + listID);
     });
@@ -56,23 +35,12 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Not used for now
     // TODO: groupID in print later
     socket.on("joinGroup", groupID => {
-      var id = new obejctID(groupID);
+      var id = groupID;
       socket.join(id);
       console.log(id);
       io.in(id).emit("has joined", "A user has joined the group-room: " + groupID);
     });
 
-    //TODO: does this even exist in db??
-    socket.on("getGroups", () => {
-      //TODO: return list of groups for a user
-      try {
-        io.emit("getGroups", 1);
-      } catch (e) {
-        console.log(e);
-      }
-    });
-
-    //TODO: return list of lists for a group
     socket.on("getLists", groupID => {
       try {
         var lists = dbfunc.getLists(database, new objectID(groupID));
@@ -115,7 +83,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("checkTask", async (listID, taskID) => {
-      //TODO: check a task given an ID
       try {
         await dbfunc.checkTask(database, new objectID(listID), new objectID(taskID));
         io.emit("checkTask", taskID, null);
@@ -126,7 +93,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     socket.on("uncheckTask", async (listID, taskID) => {
-      //TODO: uncheck a task given an
       try {
         dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         io.emit("uncheckTask", taskID, null);
@@ -189,15 +155,13 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     socket.on("renameGroup", async (groupID, value) => {
       try {
-        await dbfunc.renameGroup(database, groupID, value);
+        await dbfunc.renameGroup(database, new objectID(groupID), value);
         io.emit("renameGroup", groupID, null);
       } catch (e) {
         io.emit("renameGroup", null, "Could not rename group");
         console.log(e);
       }
     });
-
-    //------------------
 
     // Register a user with a name and password
     // TODO: use real databse instead of mock
@@ -223,7 +187,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // returns authenticate event with an error message if error occured and null if successfull
     // TODO: use real database instead of mock
     socket.on("authenticate", async (username, password) => {
-      console.log("authenticate", username, password);
       if (!username) {
         io.emit("authenticate", null, "missing username");
       } else if (!password) {
@@ -231,9 +194,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       } else {
         try {
           var res = await authenticate(username, password);
-          var userid = 1337; // MOCK
           if (res) {
-            io.emit("authenticate", userid, null);
+            io.emit("authenticate", true, null);
           } else {
             io.emit("authenticate", null, "Autentication failed");
           }
@@ -243,14 +205,24 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
-    socket.on("inviteUser", (groupID, userID) => {
-      //TODO: invite user to group
+    socket.on("inviteUser", async (groupID, userID) => {
+      try {
+        await dbfunc.inviteUser(database, new objectID(groupID), new objectID(userID));
+        io.emit("inviteUser", true, null);
+      } catch (e) {
+        console.log(e);
+        io.emit("inviteUser", null, "Could not invite user");
+      }
     });
 
-    socket.on("leaveGroup", (groupID, userID) => {
-      //TODO: remove user from group, check if sucessfull
-      dbfunc.leaveGroup(groupID, userID);
-      io.emit("leaveGroup", true);
+    socket.on("leaveGroup", async (groupID, userID) => {
+      try {
+        dbfunc.leaveGroup(database, new objectID(groupID), new objectID(userID));
+        io.emit("leaveGroup", groupID, null);
+      } catch (e) {
+        console.log(e);
+        io.emit("leaveGroup", null, "Could not leave group");
+      }
     });
 
     socket.on("disconnect", () => {
@@ -264,6 +236,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       console.log("Message: ", msg);
     });
 
+    // Some functions for authentication and password hash management
     async function hash_password(password) {
       const hash3 = await bcrypt.hashSync(password, salt);
       return hash3;
@@ -284,16 +257,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       } else {
         return compare_passwords(user.passwordHash, password);
       }
-      //TODO: change to database, use getUser func to aquire password hash
-      // should return userid so authentication function can emit it to user on login
-      // const found = await users.find(x => x.name == username);
-      // if (!found) {
-      //   console.log("user does not exist");
-      //   return false;
-      // } else {
-      //   const res = await compare_passwords(found["passwordhash"], password);
-      //   return res;
-      // }
     }
   });
   db.close();

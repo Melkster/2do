@@ -24,6 +24,11 @@ export default class LogInScreen extends Component {
       modalVisible: false
     };
   }
+
+  static navigationOptions = {
+    title: "Create account"
+  };
+
   componentWillUnmount() {
     socket.removeAllListeners();
   }
@@ -59,7 +64,7 @@ export default class LogInScreen extends Component {
 
           <Modal visible={this.state.modalVisible} animationType={"slide"} onRequestClose={this._closeModal}>
             <View style={styles.container}>
-              <Text>You have successfully created an account</Text>
+              <Text>You successfully created an account</Text>
               <Button onPress={this._closeModal} title="Back to login" />
             </View>
           </Modal>

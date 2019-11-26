@@ -7,10 +7,13 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   TextInput,
-  View
+  View,
+  Text,
+  TouchableOpacity
 } from "react-native";
 import socket from "./socket";
 import styles from "./styles";
+import { Separator } from "react-native-tableview-simple";
 
 failed_error = "Login failed";
 
@@ -25,14 +28,14 @@ export default class LogInScreen extends Component {
   }
 
   static navigationOptions = {
-    title: "2do log in"
+    title: "2Do log in"
   };
 
   render() {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView behavior="height" style={styles.container} onPress={Keyboard.dismiss}>
-          <View>
+          <View style={styles.container}>
             <TextInput
               value={this.state.username}
               onChangeText={username => this.setState({ username })}
@@ -51,11 +54,13 @@ export default class LogInScreen extends Component {
               style={styles.input}
               onPress={() => this._logInAsync(this.state.username, this.state.password)}
             />
-            <Button
-              title={"Create account"}
-              style={styles.input}
+            <Separator />
+            <TouchableOpacity
+              style={styles.clearButton}
               onPress={() => this.props.navigation.navigate("CreateAccount")}
-            />
+            >
+              <Text>Create account</Text>
+            </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>

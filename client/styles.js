@@ -10,7 +10,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    margin: 10
   },
   input: {
     width: 300,
@@ -19,6 +20,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "gray",
     marginBottom: 10
+  },
+  clearButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 10
   },
   errorStatusIndicator: {
     color: "red",

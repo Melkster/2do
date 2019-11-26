@@ -199,6 +199,24 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     //------------------
 
+    // Register a user with a name and password
+    // TODO: use real databse instead of mock
+    socket.on("register", async (username, password) => {
+      if (!username) {
+        io.emit("register", null, "missing username");
+      } else if (!password) {
+        io.emit("register", null, "missing password");
+      } else {
+        try {
+          var passwordHash = await hash_password(password);
+          await dbfunc.registerUser(database, username, passwordHash);
+        } catch (e) {
+          io.emit("register", null, "could not register user");
+          console.log(e);
+        }
+      }
+    });
+
     // Authenticate event sent when login on client, the authenticate function
     // is used to check the password compared to the one in database
     //
@@ -225,24 +243,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
-    // Register a user with a name and password
-    // TODO: use real databse instead of mock
-    socket.on("register", async (username, password) => {
-      if (!username) {
-        io.emit("register", null, "missing username");
-      } else if (!password) {
-        io.emit("register", null, "missing password");
-      } else {
-        try {
-          var passwordHash = await hash_password(password);
-          await dbfunc.registerUser(database, username, passwordHash);
-        } catch (e) {
-          io.emit("register", null, "could not register user");
-          console.log(e);
-        }
-      }
-    });
-
     socket.on("inviteUser", (groupID, userID) => {
       //TODO: invite user to group
     });
@@ -264,27 +264,36 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       console.log("Message: ", msg);
     });
 
-    async function hash_password(user, password) {
-      const hash3 = await bcrypt.hash(password, salt);
+    async function hash_password(password) {
+      const hash3 = await bcrypt.hashSync(password, salt);
       return hash3;
     }
 
     async function compare_passwords(passwordhash, password) {
-      const res = await bcrypt.compare(password, passwordhash);
+      const res = await bcrypt.compareSync(password, passwordhash);
       return res;
     }
 
     async function authenticate(username, password) {
-      //TODO: change to database, use getUser func to aquire password hash
-      // should return userid so authentication function can emit it to user on login
-      const found = await users.find(x => x.name == username);
-      if (!found) {
-        console.log("user does not exist");
+      var user = await dbfunc.getUser(database, username);
+      console.log(user.passwordHash);
+
+      if (!user) {
+        console.log("no user with that name");
         return false;
       } else {
-        const res = await compare_passwords(found["passwordhash"], password);
-        return res;
+        return compare_passwords(user.passwordHash, password);
       }
+      //TODO: change to database, use getUser func to aquire password hash
+      // should return userid so authentication function can emit it to user on login
+      // const found = await users.find(x => x.name == username);
+      // if (!found) {
+      //   console.log("user does not exist");
+      //   return false;
+      // } else {
+      //   const res = await compare_passwords(found["passwordhash"], password);
+      //   return res;
+      // }
     }
   });
   db.close();

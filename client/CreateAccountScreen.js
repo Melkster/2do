@@ -92,6 +92,7 @@ export default class LogInScreen extends Component {
   _closeModal = () => {
     this._setModalVisible(false);
     this.props.navigation.popToTop();
+    this.props.navigation.state.params.setFields(this.state.username, this.state.password1);
   };
 
   _registerUser = callback => {

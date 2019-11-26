@@ -57,7 +57,7 @@ export default class LogInScreen extends Component {
             <Separator />
             <TouchableOpacity
               style={styles.clearButton}
-              onPress={() => this.props.navigation.navigate("CreateAccount")}
+              onPress={() => this.props.navigation.navigate("CreateAccount", { setFields: this.setFields })}
             >
               <Text>Create account</Text>
             </TouchableOpacity>
@@ -81,5 +81,11 @@ export default class LogInScreen extends Component {
         this.props.navigation.navigate("App", { userID });
       });
     });
+  };
+
+  // Intended to be used as a callback function to set username and password
+  // when navigating backfrom account creation page
+  setFields = (username, password) => {
+    this.setState({ username, password });
   };
 }

@@ -8,54 +8,25 @@ socket.on("connect", socket => {
   console.log("Connected!");
 });
 
-//var group = readline.question("what room to join: ")
-///socket.emit('join group', group);
-// socket.on("has joined", msg => {
-//   console.log(msg);
-// });
-// socket.on("message", msg => {
-//   console.log(msg);
-// });
-
-// socket.on("error", msg => {
-//   console.log(msg);
-// });
-
-// socket.on("success", msg => {
-//   console.log(msg);
-// });
-
-// socket.on("groupCreated", msg => {
-//   console.log(msg);
-// });
-
-// socket.on("register", userid => {
-//   console.log(userid);
-// });
-
-// socket.on("authenticate", res => {
-//   console.log(res);
-// });
-//socket.emit('chat message', readline.question("any message to the group? "), group);
-//socket.emit("createGroup", "1000", "100");
-// socket.emit("addTask", "100", "100", readline.question("what task to add? "));
-//socket.emit("authenticate", "", "melkersuger");
-//socket.emit("register", "asdasdasd", "1111");
-//socket.emit("authenticate", "asdasdasd", "1111");
-//socket.emit("authenticate", "asdasdasd", "22222");
-
-socket.emit("createGroup", 111, 11);
+socket.emit("createGroup", 111, "group1");
 socket.on("createGroup", (groupID, err) => {
-  console.log(typeof groupID);
-  var groupID2 = new objectID(groupID);
-  console.log(typeof groupID2);
-  socket.emit("createList", groupID2, "BABBABABABA");
+  //socket.emit("deleteGroup", groupID);
+  socket.emit("createList", groupID, "List1");
 });
 
 socket.on("createList", (listID, err) => {
-  socket.emit("addTask", listID, "ASSDASDAS");
-});
-
-socket.on("addTask", (taskID, err) => {
-  socket.emit("deleteTask", taskID);
+  //socket.emit("deleteList", listID);
+  socket.emit("addTask", listID, "task1");
+  socket.emit("renameList", listID, "NEW NEW NEW LIST");
+  socket.on("addTask", (taskID, err) => {
+    socket.emit("editTask", listID, taskID, "NYYTTTTTT VALUE");
+    // socket.emit("deleteTask", taskID);
+    // socket.emit("deleteList", listID);
+    //socket.emit("deleteTask", taskID);
+    // socket.emit("checkTask", listID, taskID);
+    // socket.on("checkTask", (taskID, err) => {
+    //   console.log(taskID, err);
+    //   socket.emit("uncheckTask", listID, taskID);
+    // });
+  });
 });

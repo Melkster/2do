@@ -21,16 +21,14 @@ module.exports = {
     }
   },
 
-  // Inserts a list into the given group ID with given list name
-  // Returns the ID of the newly created list
+  //Inserts a list into the given group ID with given list name
+  //Returns the ID of the newly created list
   createList: async function(database, groupID, listName) {
     var id = new objectID();
     var listToInsert = {
       $push: { lists: { _id: id, name: listName, tasks: [] } }
     };
     var query = { _id: groupID };
-    console.log(query);
-    console.log(listToInsert);
     try {
       await database.collection("groups").updateOne(query, listToInsert);
       return id;
@@ -41,6 +39,7 @@ module.exports = {
 
   // Adds a task to the provided listID with the provided text
   // Returns the ID of the newly created task
+  // TODO, make it send to rooms when it is implemented
   addTask: async function(database, listID, value) {
     var id = new objectID();
     var taskToInsert = {
@@ -54,7 +53,6 @@ module.exports = {
       throw err;
     }
   },
-  //-------
   // Deletes a group with the given groupID
   deleteGroup: async function(database, groupID) {
     var usersToUpdate = { $pull: { groups: groupID } };
@@ -62,45 +60,6 @@ module.exports = {
     try {
       await database.collection("groups").deleteOne({ _id: groupID });
       await database.collection("users").updateMany(query, usersToUpdate);
-    } catch (err) {
-      throw err;
-    }
-  },
-
-  // Adds a user with the given userID to the given groupID
-  inviteUser: async function(database, groupID, userID) {
-    var userToInsert = { $push: { users: userID } };
-    var query = { _id: groupID };
-    var groupToInsert = { $push: { groups: groupID } };
-    var groupQuery = { _id: userID };
-    try {
-      await database.collection("groups").updateOne(query, userToInsert);
-      await database.collection("users").updateOne(groupQuery, groupToInsert);
-    } catch (err) {
-      throw err;
-    }
-  },
-
-  // Removes the user with the given userID from the given groupID
-  leaveGroup: async function(database, groupID, userID) {
-    var userToRemove = { $pull: { users: userID } };
-    var query = { _id: groupID };
-    var groupToRemove = { $pull: { groups: groupID } };
-    var userQuery = { groups: groupID };
-    try {
-      await database.collection("groups").updateOne(query, userToRemove);
-      await database.collection("users").updateOne(userQuery, groupToRemove);
-    } catch (err) {
-      throw err;
-    }
-  },
-
-  // Changes the name of the given groupID to newName
-  renameGroup: async function(database, groupID, newName) {
-    var newName = { $set: { name: newName } };
-    var query = { _id: groupID };
-    try {
-      await database.collection("groups").updateOne(query, newName);
     } catch (err) {
       throw err;
     }
@@ -118,23 +77,34 @@ module.exports = {
     }
   },
 
-  // Renames a list with the given listID with the new newName
-  renameList: async function(database, listID, newName) {
-    var listToEdit = { $set: { "lists.$.name": newName } };
-    var query = { "lists._id": listID };
-    try {
-      await database.collection("groups").updateOne(query, listToEdit);
-    } catch (err) {
-      throw err;
-    }
-  },
-
   // Deletes a task with the given taskID
   deleteTask: async function(database, taskID) {
     var taskToRemove = { $pull: { "lists.$.tasks": { _id: taskID } } };
     var query = { "lists.tasks._id": taskID };
     try {
       await database.collection("groups").updateOne(query, taskToRemove);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Changes the name of the given groupID to newName
+  renameGroup: async function(database, groupID, newName) {
+    var newName = { $set: { name: newName } };
+    var query = { _id: groupID };
+    try {
+      await database.collection("groups").updateOne(query, newName);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Renames a list with the given listID with the new newName
+  renameList: async function(database, listID, newName) {
+    var listToEdit = { $set: { "lists.$.name": newName } };
+    var query = { "lists._id": listID };
+    try {
+      await database.collection("groups").updateOne(query, listToEdit);
     } catch (err) {
       throw err;
     }
@@ -199,6 +169,34 @@ module.exports = {
         .find(query)
         .project(fields);
       return result.toArray();
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Adds a user with the given userID to the given groupID
+  inviteUser: async function(database, groupID, userID) {
+    var userToInsert = { $push: { users: userID } };
+    var query = { _id: groupID };
+    var groupToInsert = { $push: { groups: groupID } };
+    var groupQuery = { _id: userID };
+    try {
+      await database.collection("groups").updateOne(query, userToInsert);
+      await database.collection("users").updateOne(groupQuery, groupToInsert);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Removes the user with the given userID from the given groupID
+  leaveGroup: async function(database, groupID, userID) {
+    var userToRemove = { $pull: { users: userID } };
+    var query = { _id: groupID };
+    var groupToRemove = { $pull: { groups: groupID } };
+    var userQuery = { groups: groupID };
+    try {
+      await database.collection("groups").updateOne(query, userToRemove);
+      await database.collection("users").updateOne(userQuery, groupToRemove);
     } catch (err) {
       throw err;
     }

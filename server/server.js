@@ -40,11 +40,164 @@ var users = [
 //Connect to databse
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
-  //console.log(database);
-
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
     console.log("A user connected");
+
+    // Event that gets called when user navigates to a list, this joines a socket room
+    // which gets updated everytime any member of the room makes a change
+    // remove listID in print later
+    socket.on("enterListRoom", listID => {
+      var id = new objectID(listID);
+      socket.join(id);
+      io.in(id).emit("enterListRoom", "A user has joined the list-room: " + listID);
+    });
+
+    // Not used for now
+    // TODO: groupID in print later
+    socket.on("joinGroup", groupID => {
+      var id = new obejctID(groupID);
+      socket.join(id);
+      console.log(id);
+      io.in(id).emit("has joined", "A user has joined the group-room: " + groupID);
+    });
+
+    //TODO: does this even exist in db??
+    socket.on("getGroups", () => {
+      //TODO: return list of groups for a user
+      try {
+        io.emit("getGroups", 1);
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
+    //TODO: return list of lists for a group
+    socket.on("getLists", groupID => {
+      try {
+        var lists = dbfunc.getLists(database, new objectID(groupID));
+        io.emit("getLists", lists, null);
+      } catch (e) {
+        io.emit("getLists", null, "Could not get lists");
+        console.log(e);
+      }
+    });
+
+    // Use rooms later when that is implemented correctly
+    socket.on("addTask", async (listID, value) => {
+      try {
+        var taskID = await dbfunc.addTask(database, new objectID(listID), value);
+        io.emit("addTask", taskID, null);
+      } catch (e) {
+        io.emit("addTask", null, "could not add task");
+        console.log(e);
+      }
+    });
+
+    socket.on("createList", async (groupID, value) => {
+      try {
+        var listID = await dbfunc.createList(database, new objectID(groupID), value);
+        io.emit("createList", listID, null);
+      } catch (e) {
+        io.emit("createList", null, "could not create list");
+        console.log(e);
+      }
+    });
+
+    socket.on("createGroup", async (userID, groupName) => {
+      try {
+        var groupID = await dbfunc.createGroup(database, new objectID(userID), groupName);
+        io.emit("createGroup", groupID, null);
+      } catch (e) {
+        console.log(e);
+        io.emit("createGroup", null, "Could not create group");
+      }
+    });
+
+    socket.on("checkTask", async (listID, taskID) => {
+      //TODO: check a task given an ID
+      try {
+        await dbfunc.checkTask(database, new objectID(listID), new objectID(taskID));
+        io.emit("checkTask", taskID, null);
+      } catch (e) {
+        io.emit("checkTask", null, "Could not check task");
+        console.log(e);
+      }
+    });
+
+    socket.on("uncheckTask", async (listID, taskID) => {
+      //TODO: uncheck a task given an
+      try {
+        dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
+        io.emit("uncheckTask", taskID, null);
+      } catch (e) {
+        io.emit("uncheckTask", null, "Could not uncheck task");
+        console.log(e);
+      }
+    });
+
+    socket.on("deleteTask", async taskID => {
+      try {
+        await dbfunc.deleteTask(database, new objectID(taskID));
+        io.emit("deleteTask", true, null);
+      } catch (e) {
+        io.emit("deleteTask", null, "Could not delete task");
+        console.log(e);
+      }
+    });
+
+    socket.on("deleteList", async listID => {
+      try {
+        await dbfunc.deleteList(database, new objectID(listID));
+        io.emit("deleteList", true, null);
+      } catch (e) {
+        io.emit("deleteList", null, "Could not delete list");
+        console.log(e);
+      }
+    });
+
+    socket.on("deleteGroup", async groupID => {
+      try {
+        await dbfunc.deleteGroup(database, new objectID(groupID));
+        io.emit("deleteGroup", true, null);
+      } catch (e) {
+        io.emit("deleteGroup", null, "Could not delete Group");
+        console.log(e);
+      }
+    });
+
+    // Emit changes to rooms instead on only back
+    socket.on("editTask", async (listID, taskID, value) => {
+      try {
+        await dbfunc.editTask(database, new objectID(listID), new objectID(taskID), value);
+        io.emit("editTask", taskID, null);
+      } catch (e) {
+        io.emit("editTask", null, "Could not edit task");
+        console.log(e);
+      }
+    });
+
+    socket.on("renameList", async (listID, value) => {
+      try {
+        await dbfunc.renameList(database, new objectID(listID), value);
+        io.emit("renameList", listID, null);
+      } catch (e) {
+        io.emit("renameTask", null, "Could not rename list");
+        console.log(e);
+      }
+    });
+
+    socket.on("renameGroup", async (groupID, value) => {
+      try {
+        await dbfunc.renameGroup(database, groupID, value);
+        io.emit("renameGroup", groupID, null);
+      } catch (e) {
+        io.emit("renameGroup", null, "Could not rename group");
+        console.log(e);
+      }
+    });
+
+    //------------------
 
     // Authenticate event sent when login on client, the authenticate function
     // is used to check the password compared to the one in database
@@ -74,165 +227,20 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     // Register a user with a name and password
     // TODO: use real databse instead of mock
-    socket.on("register", (username, password) => {
-      console.log("user reg", username, password);
+    socket.on("register", async (username, password) => {
       if (!username) {
-        io.emit("error", "missing username");
+        io.emit("register", null, "missing username");
       } else if (!password) {
-        io.emit("error", "missing password");
+        io.emit("register", null, "missing password");
       } else {
-        var userid = 1;
-        users.push({ name: username, password: "" });
-        (async () => {
-          await hash_password(username, password);
-          io.emit("register", userid);
-        })();
+        try {
+          var passwordHash = await hash_password(password);
+          await dbfunc.registerUser(database, username, passwordHash);
+        } catch (e) {
+          io.emit("register", null, "could not register user");
+          console.log(e);
+        }
       }
-    });
-
-    // Event that gets called when user navigates to a list, this joines a socket room
-    // which gets updated everytime any member of the room makes a change
-    socket.on("enterListRoom", listID => {
-      socket.join(listID);
-      console.log(listID);
-      io.in(listID).emit("enterListRoom", "A user has joined the list-room: " + listID);
-    });
-
-    // Not used for now
-    // TODO: remove if we decide to not use this at all
-    socket.on("joinGroup", groupID => {
-      socket.join(groupID);
-      console.log(groupID);
-      io.in(groupID).emit("has joined", "A user has joined the group-room: " + groupID);
-    });
-
-    // Used only for debug purposes
-    // TODO: remove later
-    socket.on("chatMessage", (msg, group) => {
-      io.in(group).emit("message", msg);
-      console.log("Message: ", msg);
-    });
-
-    socket.on("getGroups", () => {
-      //TODO: return list of groups for a user
-      try {
-        io.emit("getGroups", 1);
-      } catch (e) {
-        console.log(e);
-      }
-    });
-
-    //----------------------------------------------------------
-    //TODO: return list of lists for a group
-    socket.on("getLists", groupID => {
-      try {
-        io.emit("getLists", 1, null);
-      } catch (e) {
-        io.emit("getLists", null, "Could not get lists");
-        console.log(e);
-      }
-    });
-
-    socket.on("addTask", async (listID, value) => {
-      try {
-        var taskID = await dbfunc.addTask(database, new objectID(listID), value);
-        io.in(listID).emit("addTask", taskID, null);
-      } catch (e) {
-        io.emit("addTask", null, "could not add task");
-        console.log(e);
-      }
-    });
-
-    socket.on("createList", async (groupID, value) => {
-      try {
-        var listID = await dbfunc.createList(database, new objectID(groupID), value);
-        io.emit("createList", listID, null);
-      } catch (e) {
-        io.emit("createList", null, "could not create list");
-        console.log(e);
-      }
-    });
-
-    socket.on("createGroup", async (userID, groupName) => {
-      try {
-        var groupID = await dbfunc.createGroup(database, userID, groupName);
-        io.emit("createGroup", groupID, null);
-      } catch (e) {
-        console.log(e);
-        io.emit("createGroup", null, "Could not create group");
-      }
-    });
-
-    socket.on("deleteTask", async taskID => {
-      try {
-        dbfunc.deleteTask(database, taskID);
-        io.emit("deleteTask", true, null);
-      } catch (e) {
-        io.emit("deleteTask", null, "Could not delete task");
-        console.log(e);
-      }
-    });
-
-    socket.on("deleteList", async listID => {
-      try {
-        dbfunc.deleteList(database, listID);
-        io.emit("deleteList", true, null);
-      } catch (e) {
-        io.emit("deleteList", null, "Could not delete list");
-        console.log(e);
-      }
-    });
-
-    socket.on("deleteGroup", async groupID => {
-      //TODO: delete group from database
-      try {
-        dbfunc.deleteGroup(database, groupID);
-        io.emit("deleteGroup", true, null);
-      } catch (e) {
-        io.emit("deleteGroup", null, "Could not delete Group");
-        console.log(e);
-      }
-    });
-
-    socket.on("checkTask", async (listID, taskID) => {
-      //TODO: check a task given an ID
-      try {
-        dbfunc.checkTask(database, listID, taskID);
-        io.emit("checkTask", taskID, null);
-      } catch (e) {
-        io.emit("checkTask", null, "Could not check task");
-        console.log(e);
-      }
-    });
-
-    socket.on("uncheckTask", async (listID, taskID) => {
-      //TODO: uncheck a task given an
-      try {
-        dbfunc.uncheckTask(database, listID, taskID);
-        io.emit("uncheckTask", taskID, null);
-      } catch (e) {
-        io.emit("uncheckTask", null, "Could not uncheck task");
-        console.log(e);
-      }
-    });
-
-    //------------------
-    socket.on("renameTask", (listID, taskID, userID, value) => {
-      //TODO: Edit a task given and ID and new value
-      dbfunc.renameTask(listID, taskID, value);
-      io.emit("renameTask", taskID);
-    });
-
-    socket.on("renameList", (groupID, listID, value) => {
-      //TODO: Edit a list given and ID and new value
-      dbfunc.renameList(groupID, listID, value);
-      io.emit("renameList", listID);
-    });
-
-    socket.on("renameGroup", (groupID, value) => {
-      //TODO: Edit a group given and ID and new value
-      dbfunc.renameGroup(groupID, value);
-      io.emit("renameGroup", groupID);
     });
 
     socket.on("inviteUser", (groupID, userID) => {
@@ -249,11 +257,16 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       console.log("A user disconnected");
     });
 
+    // Used only for debug purposes
+    // TODO: remove later
+    socket.on("chatMessage", (msg, group) => {
+      io.in(group).emit("message", msg);
+      console.log("Message: ", msg);
+    });
+
     async function hash_password(user, password) {
       const hash3 = await bcrypt.hash(password, salt);
-      user = users.find(x => x.name == user);
-      user["passwordhash"] = hash3;
-      //TODO: change to return hashed password and then send call the register function in dbfunc
+      return hash3;
     }
 
     async function compare_passwords(passwordhash, password) {

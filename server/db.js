@@ -7,6 +7,7 @@ var objectID = require("mongodb").ObjectID;
 
 module.exports = {
   // Creates a group and inserts it into the database with the given userID
+  // Also inserts the groupID in the users groups array
   // Returns the ID of the newly created group
   createGroup: async function(database, userID, groupName) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
@@ -53,7 +54,9 @@ module.exports = {
       throw err;
     }
   },
+
   // Deletes a group with the given groupID
+  // Also removes the groupID from the groups array from all the users who is in the group
   deleteGroup: async function(database, groupID) {
     var usersToUpdate = { $pull: { groups: groupID } };
     var query = { groups: groupID };
@@ -160,21 +163,19 @@ module.exports = {
 
   // TODO not correct version on github??
   // Returns the list field from the group with the given groupID
-  getLists: function(database, groupID) {
-    query = { _id: groupID };
-    fields = { _id: 0, name: 0, users: 0 };
+  getLists: async function(database, groupID) {
+    var query = { _id: groupID };
+    var fields = { projection: { _id: 0, name: 0, users: 0 } };
     try {
-      const result = database
-        .collection("groups")
-        .find(query)
-        .project(fields);
-      return result.toArray();
+      const result = await database.collection("groups").findOne(query, fields);
+      return result;
     } catch (err) {
       throw err;
     }
   },
 
   // Adds a user with the given userID to the given groupID
+  // Also inserts the groupID into the users groups array
   inviteUser: async function(database, groupID, userID) {
     var userToInsert = { $push: { users: userID } };
     var query = { _id: groupID };
@@ -189,6 +190,7 @@ module.exports = {
   },
 
   // Removes the user with the given userID from the given groupID
+  // Also removes the groupID from the groups array from the user with the userID
   leaveGroup: async function(database, groupID, userID) {
     var userToRemove = { $pull: { users: userID } };
     var query = { _id: groupID };
@@ -203,6 +205,7 @@ module.exports = {
   },
 
   // Inserts a new user into the users document with the given username and passwordHash
+  // Returns the new userID
   registerUser: async function(database, username, passwordHash) {
     var userToInsert = {
       name: username,
@@ -210,7 +213,8 @@ module.exports = {
       groups: []
     };
     try {
-      await database.collection("users").insertOne(userToInsert);
+      const result = await database.collection("users").insertOne(userToInsert);
+      return result.ops[0]._id;
     } catch (err) {
       throw err;
     }

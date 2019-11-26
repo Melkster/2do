@@ -67,6 +67,13 @@ export default class LogInScreen extends Component {
     );
   }
 
+  /**
+   * Logs in user and fetches all groups.
+   *
+   * Expects a response to an `authenticate` event with a `userID` and `err`. If
+   * there is no `err`, expects a response from a `getGroups` event
+   * containing... TODO
+   */
   _logInAsync = (username, password) => {
     if (!username || !password) return Alert.alert(failed_error, "Please enter your username and password");
 
@@ -83,8 +90,10 @@ export default class LogInScreen extends Component {
     });
   };
 
-  // Intended to be used as a callback function to set username and password
-  // when navigating backfrom account creation page
+  /**
+   * Intended to be used as a callback function to set username and password
+   * when navigating backfrom account creation page
+   */
   setFields = (username, password) => {
     this.setState({ username, password });
   };

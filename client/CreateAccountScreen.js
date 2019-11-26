@@ -29,6 +29,7 @@ export default class LogInScreen extends Component {
     title: "Create account"
   };
 
+  // Remove socket listeners on unmount
   componentWillUnmount() {
     socket.removeAllListeners();
   }
@@ -79,6 +80,9 @@ export default class LogInScreen extends Component {
     }
   };
 
+  /**
+   * Sets the visibility of modal.
+   */
   _setModalVisible(visible) {
     this.setState({ modalVisible: visible });
   }
@@ -89,12 +93,23 @@ export default class LogInScreen extends Component {
     });
   };
 
+  /**
+   * Closes modal and navigates back to the initial screen. Also calls the
+   * `setFiels()` callback function, which passes `username` and `password` to
+   * the initial screen.
+   */
   _closeModal = () => {
     this._setModalVisible(false);
     this.props.navigation.popToTop();
     this.props.navigation.state.params.setFields(this.state.username, this.state.password1);
   };
 
+  /**
+   * Registers user.
+   *
+   * Expects a response to a `register` event with an `err`. If
+   * there is no `err`, runs `callback()`.
+   */
   _registerUser = callback => {
     if (this.state.password1 === this.state.password2) {
       socket.emit("register", this.state.username, this.state.password1);

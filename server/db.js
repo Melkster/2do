@@ -214,5 +214,15 @@ module.exports = {
     } catch (err) {
       throw err;
     }
+  },
+
+  getUser: async function(database, username) {
+    var userToFind = { name: username };
+    try {
+      const result = await database.collection("users").findOne(userToFind);
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
 };

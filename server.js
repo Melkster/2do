@@ -5,12 +5,15 @@ var url = "mongodb://localhost:27017/data/db";
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   if (err) throw err;
   var database = db.db("mydb");
-  // var userID = await registerUser("axel", "123");
-  // var userID2 = await registerUser("asdasd", "123");
-  // var group = await createGroup(userID, "Grupp 2");
-  // await inviteUser(group, userID2);
-  // await leaveGroup(group, userID);
-  // await deleteGroup(group);
+  var userID = await registerUser("axel", "123");
+  var group = await createGroup(userID, "Grupp 2");
+  var list = await createList(group, "Matlista");
+  var list2 = await createList(group, "Städa");
+  var task = await addTask(list, "mat");
+  var task3 = await addTask(list, "asd");
+  var task2 = await addTask(list2, "asd");
+  var tasks = await getTasks(list);
+  console.log(tasks);
   db.close();
 
   // Creates a group and inserts it into the database with the given userID
@@ -96,8 +99,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   async function leaveGroup(groupID, userID) {
     var userToRemove = { $pull: { users: userID } };
     var query = { _id: groupID };
-    var groupToRemove = {$pull: { groups: groupID}};
-    var userQuery = { groups: groupID }
+    var groupToRemove = { $pull: { groups: groupID } };
+    var userQuery = { groups: groupID };
     try {
       await database.collection("groups").updateOne(query, userToRemove);
       await database.collection("users").updateOne(userQuery, groupToRemove);
@@ -217,7 +220,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     }
   }
 
-  // Inserts a new user into the users document with the given username and passwordHash
+  // Inserts a new user into the users document with the given username and
+  // passwordHash
   // Returns the users new userID
   async function registerUser(username, passwordHash) {
     var userToInsert = {
@@ -239,6 +243,22 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     try {
       const result = await database.collection("users").findOne(userToFind);
       return result;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Returns all the tasks from the given listID as an array
+  async function getTasks(listID) {
+    var query = { "lists._id": listID };
+    var projection = {
+      projection: { _id: 0, "lists.name": 0, "lists._id": 0, lists: { $elemMatch: { _id: listID } } }
+    };
+    try {
+      const result = await database
+        .collection("groups")
+        .findOne(query, projection);
+      return result.lists[0].tasks;
     } catch (err) {
       throw err;
     }

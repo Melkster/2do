@@ -1,8 +1,3 @@
-// TODO: try catch statements for all the events
-// database functions export
-// rewrite with real database functions
-// MAKE TO NEW OBJECT IDS THINYG FOR ALL THE FUCKING FUNCTIONS
-
 const app = require("express")();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
@@ -29,7 +24,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("enterListRoom", listID => {
       var id = listID;
       socket.join(id);
-      io.in(id).emit("enterListRoom", "A user has joined the list-room: " + listID);
+      //console.log("user has joined room: " + listID);
+      //.in(id)
+      io.emit("enterListRoom", "A user has joined the list-room: " + listID);
     });
 
     // Not used for now
@@ -55,6 +52,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("addTask", async (listID, value) => {
       try {
         var taskID = await dbfunc.addTask(database, new objectID(listID), value);
+        //.in(listID)
         io.emit("addTask", taskID, null);
       } catch (e) {
         io.emit("addTask", null, "could not add task");
@@ -85,6 +83,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("checkTask", async (listID, taskID) => {
       try {
         await dbfunc.checkTask(database, new objectID(listID), new objectID(taskID));
+        //.in(listID)
         io.emit("checkTask", taskID, null);
       } catch (e) {
         io.emit("checkTask", null, "Could not check task");
@@ -95,6 +94,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("uncheckTask", async (listID, taskID) => {
       try {
         dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
+        //.in(listID)
         io.emit("uncheckTask", taskID, null);
       } catch (e) {
         io.emit("uncheckTask", null, "Could not uncheck task");
@@ -102,9 +102,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
-    socket.on("deleteTask", async taskID => {
+    socket.on("deleteTask", async (listID, taskID) => {
       try {
         await dbfunc.deleteTask(database, new objectID(taskID));
+        //.in(listID)
         io.emit("deleteTask", true, null);
       } catch (e) {
         io.emit("deleteTask", null, "Could not delete task");
@@ -136,6 +137,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("editTask", async (listID, taskID, value) => {
       try {
         await dbfunc.editTask(database, new objectID(listID), new objectID(taskID), value);
+        //.in(listID)
         io.emit("editTask", taskID, null);
       } catch (e) {
         io.emit("editTask", null, "Could not edit task");
@@ -171,12 +173,17 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       } else if (!password) {
         io.emit("register", null, "missing password");
       } else {
-        try {
-          var passwordHash = await hash_password(password);
-          await dbfunc.registerUser(database, username, passwordHash);
-        } catch (e) {
-          io.emit("register", null, "could not register user");
-          console.log(e);
+        if (!(await dbfunc.getUser(database, username))) {
+          try {
+            var passwordHash = await hash_password(password);
+            var userID = await dbfunc.registerUser(database, username, passwordHash);
+            io.emit("register", userID, null);
+          } catch (e) {
+            io.emit("register", null, "could not register user");
+            console.log(e);
+          }
+        } else {
+          io.emit("register", null, "a user with that name already exist");
         }
       }
     });
@@ -225,6 +232,25 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+    socket.on("getUser", async username => {
+      try {
+        var user = await dbfunc.getUser(database, username);
+        if (user) {
+          io.emit("getUser", user, null);
+        } else {
+          io.emit("getUser", user, "A user with that name does not exist");
+        }
+      } catch (e) {
+        console.log(e);
+        io.emit("getUser", null, "Could not getUser");
+      }
+    });
+
+    socket.on("getTasks", async listID => {
+      var tasks = await dbfunc.getTasks(database, new objectID(listID));
+      io.emit("getTasks", tasks, null);
+    });
+
     socket.on("disconnect", () => {
       console.log("A user disconnected");
     });
@@ -249,8 +275,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     async function authenticate(username, password) {
       var user = await dbfunc.getUser(database, username);
-      console.log(user.passwordHash);
-
       if (!user) {
         console.log("no user with that name");
         return false;

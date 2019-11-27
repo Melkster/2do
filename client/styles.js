@@ -8,16 +8,26 @@ const styles = StyleSheet.create({
     paddingBottom: 20
   },
   container: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 20
+    margin: 10
   },
   input: {
-    width: 200,
+    width: 300,
     height: 44,
     padding: 10,
     borderWidth: 1,
     borderColor: "gray",
+    marginBottom: 10
+  },
+  clearButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 10
+  },
+  errorStatusIndicator: {
+    color: "red",
     marginBottom: 10
   },
   checkbox: {

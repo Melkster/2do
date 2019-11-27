@@ -6,10 +6,14 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  TextInput
+  TextInput,
+  View,
+  Text,
+  TouchableOpacity
 } from "react-native";
 import socket from "./socket";
 import styles from "./styles";
+import { Separator } from "react-native-tableview-simple";
 
 failed_error = "Login failed";
 
@@ -24,41 +28,52 @@ export default class LogInScreen extends Component {
   }
 
   static navigationOptions = {
-    title: "2do log in"
+    title: "2Do log in"
   };
 
   render() {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView behavior="height" style={styles.container} onPress={Keyboard.dismiss}>
-          <TextInput
-            value={this.state.username}
-            onChangeText={username => this.setState({ username })}
-            placeholder={"Username"}
-            style={styles.input}
-          />
-          <TextInput
-            value={this.state.password}
-            onChangeText={password => this.setState({ password })}
-            placeholder={"Password"}
-            secureTextEntry={true}
-            style={styles.input}
-          />
-          <Button
-            title={"Login"}
-            style={styles.input}
-            onPress={() => this._logInAsync(this.state.username, this.state.password)}
-          />
-          <Button
-            title={"Create account"}
-            style={styles.input}
-            onPress={() => this._createUserAsync(this.state.username, this.state.password)}
-          />
+          <View style={styles.container}>
+            <TextInput
+              value={this.state.username}
+              onChangeText={username => this.setState({ username })}
+              placeholder={"Username"}
+              style={styles.input}
+            />
+            <TextInput
+              value={this.state.password}
+              onChangeText={password => this.setState({ password })}
+              placeholder={"Password"}
+              secureTextEntry={true}
+              style={styles.input}
+            />
+            <Button
+              title={"Login"}
+              style={styles.input}
+              onPress={() => this._logInAsync(this.state.username, this.state.password)}
+            />
+            <Separator />
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={() => this.props.navigation.navigate("CreateAccount", { setFields: this.setFields })}
+            >
+              <Text>Create account</Text>
+            </TouchableOpacity>
+          </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     );
   }
 
+  /**
+   * Logs in user and fetches all groups.
+   *
+   * Expects a response to an `authenticate` event with a `userID` and `err`. If
+   * there is no `err`, expects a response from a `getGroups` event
+   * containing... TODO
+   */
   _logInAsync = (username, password) => {
     if (!username || !password) return Alert.alert(failed_error, "Please enter your username and password");
 
@@ -75,11 +90,11 @@ export default class LogInScreen extends Component {
     });
   };
 
-  _createUserAsync = async (username, password) => {
-    socket.emit("register", username, password);
-    socket.on("register", (userID, err) => {
-      if (err) return Alert.alert(failed_error, err);
-      Alert.alert("Success", "Registered with userID " + userID);
-    });
+  /**
+   * Intended to be used as a callback function to set username and password
+   * when navigating backfrom account creation page
+   */
+  setFields = (username, password) => {
+    this.setState({ username, password });
   };
 }

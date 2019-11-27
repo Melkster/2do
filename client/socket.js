@@ -23,7 +23,7 @@ socket.on("connect", () => {
 
 // Error event handler, prints an Alert with the provided message
 socket.on("error", data => {
-  Alert.alert("Server error", data);
+  Alert.alert("Error", data);
 });
 
 module.exports = socket;

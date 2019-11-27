@@ -7,6 +7,7 @@ var objectID = require("mongodb").ObjectID;
 
 module.exports = {
   // Creates a group and inserts it into the database with the given userID
+
   // Also inserts the groupID in the users groups array
   // Returns the ID of the newly created group
   createGroup: async function(database, userID, groupName) {
@@ -22,8 +23,10 @@ module.exports = {
     }
   },
 
+
   //Inserts a list into the given group ID with given list name
   //Returns the ID of the newly created list
+
   createList: async function(database, groupID, listName) {
     var id = new objectID();
     var listToInsert = {
@@ -40,7 +43,6 @@ module.exports = {
 
   // Adds a task to the provided listID with the provided text
   // Returns the ID of the newly created task
-  // TODO, make it send to rooms when it is implemented
   addTask: async function(database, listID, value) {
     var id = new objectID();
     var taskToInsert = {
@@ -56,6 +58,7 @@ module.exports = {
   },
 
   // Deletes a group with the given groupID
+
   // Also removes the groupID from the groups array from all the users who is in the group
   deleteGroup: async function(database, groupID) {
     var usersToUpdate = { $pull: { groups: groupID } };
@@ -68,6 +71,7 @@ module.exports = {
     }
   },
 
+
   // Deletes a list with the given listID from the given groupID
   deleteList: async function(database, listID) {
     var listToRemove = { $pull: { lists: { _id: listID } } };
@@ -79,6 +83,7 @@ module.exports = {
       throw err;
     }
   },
+
 
   // Deletes a task with the given taskID
   deleteTask: async function(database, taskID) {
@@ -101,6 +106,7 @@ module.exports = {
       throw err;
     }
   },
+
 
   // Renames a list with the given listID with the new newName
   renameList: async function(database, listID, newName) {
@@ -161,6 +167,7 @@ module.exports = {
     }
   },
 
+
   // TODO not correct version on github??
   // Returns the list field from the group with the given groupID
   getLists: async function(database, groupID) {
@@ -213,6 +220,7 @@ module.exports = {
       groups: []
     };
     try {
+
       const result = await database.collection("users").insertOne(userToInsert);
       return result.ops[0]._id;
     } catch (err) {

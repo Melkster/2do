@@ -1,7 +1,7 @@
 import io from "socket.io-client";
 import { Alert } from "react-native";
 
-socket = io("http://192.168.43.229:3000");
+socket = io("http://10.0.2.2:3000");
 
 var connect_error = false; // Ensures that an error connecting only is alerted once
 
@@ -22,8 +22,8 @@ socket.on("connect", () => {
 });
 
 // Error event handler, prints an Alert with the provided message
-socket.on("err", data => {
-  Alert.alert("Server error", data);
+socket.on("error", data => {
+  Alert.alert("Error", data);
 });
 
 module.exports = socket;

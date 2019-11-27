@@ -1,3 +1,7 @@
+// TODO: try catch statements for all the events
+// database functions export
+// rewrite with real database functions
+
 const app = require("express")();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
@@ -17,7 +21,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
     console.log("A user connected");
-
     // Event that gets called when user navigates to a list, this joines a socket room
     // which gets updated everytime any member of the room makes a change
     // remove listID in print later
@@ -38,9 +41,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       io.in(id).emit("has joined", "A user has joined the group-room: " + groupID);
     });
 
-    socket.on("getLists", groupID => {
+    socket.on("getLists", async groupID => {
       try {
-        var lists = dbfunc.getLists(database, new objectID(groupID));
+        var lists = await dbfunc.getLists(database, new objectID(groupID));
         io.emit("getLists", lists, null);
       } catch (e) {
         io.emit("getLists", null, "Could not get lists");
@@ -112,7 +115,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         console.log(e);
       }
     });
-
+      
     socket.on("deleteList", async listID => {
       try {
         await dbfunc.deleteList(database, new objectID(listID));
@@ -132,6 +135,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         console.log(e);
       }
     });
+
 
     // Emit changes to rooms instead on only back
     socket.on("editTask", async (listID, taskID, value) => {
@@ -245,6 +249,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         io.emit("getUser", null, "Could not getUser");
       }
     });
+
 
     socket.on("getTasks", async listID => {
       var tasks = await dbfunc.getTasks(database, new objectID(listID));

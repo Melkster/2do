@@ -115,7 +115,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         console.log(e);
       }
     });
-      
+
     socket.on("deleteList", async listID => {
       try {
         await dbfunc.deleteList(database, new objectID(listID));
@@ -135,7 +135,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         console.log(e);
       }
     });
-
 
     // Emit changes to rooms instead on only back
     socket.on("editTask", async (listID, taskID, value) => {
@@ -205,8 +204,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       } else {
         try {
           var res = await authenticate(username, password);
+          var user = await dbfunc.getUser(database, username);
           if (res) {
-            io.emit("authenticate", true, null);
+            io.emit("authenticate", user, null);
           } else {
             io.emit("authenticate", null, "Autentication failed");
           }
@@ -249,7 +249,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         io.emit("getUser", null, "Could not getUser");
       }
     });
-
 
     socket.on("getTasks", async listID => {
       var tasks = await dbfunc.getTasks(database, new objectID(listID));

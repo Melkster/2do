@@ -43,20 +43,20 @@ export default class LogInScreen extends Component {
         <KeyboardAvoidingView behavior="height" style={styles.container} onPress={Keyboard.dismiss}>
           <TextInput
             value={this.state.username}
-            onChangeText={username => this.setState({ username })}
+            onChangeText={username => this._setStateAndUpdateStatus({ username })}
             placeholder={"Username"}
             style={styles.input}
           />
           <TextInput
             value={this.state.password1}
-            onChangeText={password1 => this.setState({ password1 })}
+            onChangeText={password1 => this._setStateAndUpdateStatus({ password1 })}
             placeholder={"Password"}
             secureTextEntry={true}
             style={styles.input}
           />
           <TextInput
             value={this.state.password2}
-            onChangeText={password2 => this.setState({ password2 })}
+            onChangeText={password2 => this._setStateAndUpdateStatus({ password2 })}
             placeholder={"Please repeat your password"}
             secureTextEntry={true}
             style={styles.input}
@@ -77,9 +77,13 @@ export default class LogInScreen extends Component {
     );
   }
 
-  componentDidUpdate() {
-    this._credentialsStatus();
-  }
+  _setStateAndUpdateStatus = state => {
+    this.setState(state, () => {
+      return this._credentialsStatus();
+    });
+  };
+
+  _validateCredentials = (username, password1, password2) => {};
 
   /**
    * Sets this.state.credentialsStatus.
@@ -87,11 +91,9 @@ export default class LogInScreen extends Component {
    * Checks
    */
   _credentialsStatus = status => {
-    if (this.state.password1 && this.state.password2) {
+    if (this.state.password1 && this.state.password2 && this.state.password1 !== this.state.password2) {
       if (this.state.password1 !== this.state.password2) {
-        status = "Paswords don't match";
-      } else if (!this.state.username) {
-        status = "Please provide a username";
+        status = "Passwords don't match";
       }
     }
 
@@ -99,15 +101,14 @@ export default class LogInScreen extends Component {
       // Check if this.state.credentialsStatus will change to prevent infinite recursive `setState()` calls
       this.setState({ credentialsStatus: status });
     }
-    return !Boolean(status);
   };
 
   /**
    * Sets the visibility of modal.
    */
-  _setModalVisible(visible) {
+  _setModalVisible = visible => {
     this.setState({ modalVisible: visible });
-  }
+  };
 
   _confirm = () => {
     this._registerUser();
@@ -139,7 +140,7 @@ export default class LogInScreen extends Component {
    * If there is no `err`, displays confirmation modal.
    */
   _handleRegister = err => {
-    if (err) this.setState({ credentialsStatus: err });
+    if (err) this._credentialsStatus(err);
     else this._setModalVisible(true);
   };
 }

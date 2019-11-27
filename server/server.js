@@ -50,7 +50,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
     console.log("A user connected");
-
     // Authenticate event sent when login on client, the authenticate function
     // is used to check the password compared to the one in database
     //
@@ -198,9 +197,15 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("createGroup", (userID, groupName) => {
       (async () => {
         try {
-          var groupID = await dbfunc.createGroup(database, userID, groupName);
-          console.log(groupID);
-          io.emit("createGroup", groupID);
+          var res = await authenticate(username, password);
+          var user = await dbfunc.getUser(database, username);
+          if (res) {
+            delete user.passwordHash;
+            io.emit("authenticate", user, null);
+          } else {
+            io.emit("authenticate", null, "Authentication failed");
+          }
+
         } catch (e) {
           console.log(e);
           io.emit("error", e);

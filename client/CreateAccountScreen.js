@@ -21,7 +21,8 @@ export default class LogInScreen extends Component {
       username: "",
       password1: "",
       password2: "",
-      modalVisible: false
+      modalVisible: false,
+      credentialsStatus: ""
     };
   }
 
@@ -59,7 +60,7 @@ export default class LogInScreen extends Component {
             style={styles.input}
           />
 
-          <Text style={styles.errorStatusIndicator}>{this._passwordsMatchStatus()}</Text>
+          <Text style={styles.errorStatusIndicator}>{this.state.credentialsStatus}</Text>
 
           <Button title={"Create account"} style={styles.input} onPress={this._confirm} />
 
@@ -74,9 +75,21 @@ export default class LogInScreen extends Component {
     );
   }
 
-  _passwordsMatchStatus = () => {
-    if (this.state.password1 !== this.state.password2 && this.state.password1 && this.state.password2) {
-      return "Paswords don't match";
+  componentDidUpdate() {
+    status = this._credentialsStatus();
+    if (status !== this.state.credentialsStatus) {
+      // Check if this.state.credentialsStatus will change to prevent infinite recursive `setState()` calls
+      this.setState({ credentialsStatus: status });
+    }
+  }
+
+  _credentialsStatus = () => {
+    if (this.state.password1 && this.state.password2) {
+      if (this.state.password1 !== this.state.password2) {
+        return "Paswords don't match";
+      } else if (!this.state.username) {
+        return "Please provide a username";
+      }
     }
   };
 
@@ -114,8 +127,8 @@ export default class LogInScreen extends Component {
     if (this.state.password1 === this.state.password2) {
       socket.emit("register", this.state.username, this.state.password1);
       socket.on("register", (_, err) => {
-        if (err) return Alert.alert(failed_error, err);
-        callback();
+        if (err) this.setState({ credentialsStatus: err });
+        else callback();
       });
     }
   };

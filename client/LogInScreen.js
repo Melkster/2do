@@ -1,5 +1,17 @@
 import React, { Component } from "react";
-import { ActivityIndicator, AsyncStorage, Button, StatusBar, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  AsyncStorage,
+  Button,
+  StatusBar,
+  StyleSheet,
+  View,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  TextInput,
+  Text
+} from "react-native";
 import socket from "./socket";
 import styles from "./styles";
 

@@ -10,35 +10,41 @@ const styles = StyleSheet.create({
   checkbox: {
     padding: 15
   },
-  SectionHeaderStyle: {
+  listHeader: {
     backgroundColor: "#CDDC89",
     fontSize: 20,
     padding: 5,
     color: "#fff"
   },
-  SectionListItemStyle: {
+  listItem: {
     fontSize: 15,
     color: "#000",
     backgroundColor: "#F5F5F5",
     flexDirection: "row"
   },
-  SectionListTextStyle: {
+  listText: {
     flex: 1,
     padding: 15
   },
-  SectionListImageStyle: {
+  listImage: {
     width: 20,
     height: 20,
     padding: 15
   },
-  checkedTaskStyle: {
-    textDecorationLine: "line-through",
-    color: "grey"
-  },
-  uncheckedTaskStyle: {},
-  addButtonHeaderStyle: {
+  addButton: {
     fontSize: 40,
-    fontWeight: 'bold'
+    fontWeight: "bold"
+  },
+  checkedTask: {
+    textDecorationLine: "line-through",
+    color: "grey",
+    padding: 20
+  },
+  uncheckedTask: {
+    padding: 20
+  },
+  addNewTask: {
+    padding: 20
   }
 });
 

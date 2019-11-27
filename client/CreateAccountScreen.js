@@ -76,21 +76,28 @@ export default class LogInScreen extends Component {
   }
 
   componentDidUpdate() {
-    status = this._credentialsStatus();
+    this._credentialsStatus();
+  }
+
+  /**
+   * Sets this.state.credentialsStatus.
+   *
+   * Checks
+   */
+  _credentialsStatus = status => {
+    if (this.state.password1 && this.state.password2) {
+      if (this.state.password1 !== this.state.password2) {
+        status = "Paswords don't match";
+      } else if (!this.state.username) {
+        status = "Please provide a username";
+      }
+    }
+
     if (status !== this.state.credentialsStatus) {
       // Check if this.state.credentialsStatus will change to prevent infinite recursive `setState()` calls
       this.setState({ credentialsStatus: status });
     }
-  }
-
-  _credentialsStatus = () => {
-    if (this.state.password1 && this.state.password2) {
-      if (this.state.password1 !== this.state.password2) {
-        return "Paswords don't match";
-      } else if (!this.state.username) {
-        return "Please provide a username";
-      }
-    }
+    return !Boolean(status);
   };
 
   /**

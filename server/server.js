@@ -16,7 +16,7 @@ var url = "mongodb://localhost:27017/data/db";
 var dbfunc = require("./db");
 
 //Connect to databse
-mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
+mongo.connect(url, async function(err, db) {
   var database = db.db("mydb");
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
@@ -205,6 +205,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         try {
           var res = await authenticate(username, password);
           var user = await dbfunc.getUser(database, username);
+          delete user.passwordHash;
           if (res) {
             io.emit("authenticate", user, null);
           } else {
@@ -287,7 +288,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     }
   });
-  db.close();
+  //db.close();
 });
 
 http.listen(3000, "0.0.0.0", () => {

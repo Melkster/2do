@@ -24,6 +24,8 @@ export default class LogInScreen extends Component {
       modalVisible: false,
       credentialsStatus: ""
     };
+
+    socket.on("register", (_, err) => this._handleRegister(err));
   }
 
   static navigationOptions = {
@@ -108,9 +110,7 @@ export default class LogInScreen extends Component {
   }
 
   _confirm = () => {
-    this._registerUser(() => {
-      this._setModalVisible(true);
-    });
+    this._registerUser();
   };
 
   /**
@@ -125,18 +125,21 @@ export default class LogInScreen extends Component {
   };
 
   /**
-   * Registers user.
-   *
-   * Expects a response to a `register` event with an `err`. If
-   * there is no `err`, runs `callback()`.
+   * Sends a `register` event if `username` and `password` are defined.
    */
   _registerUser = callback => {
     if (this.state.password1 === this.state.password2) {
       socket.emit("register", this.state.username, this.state.password1);
-      socket.on("register", (_, err) => {
-        if (err) this.setState({ credentialsStatus: err });
-        else callback();
-      });
     }
+  };
+
+  /**
+   * Registers user.
+   *
+   * If there is no `err`, displays confirmation modal.
+   */
+  _handleRegister = err => {
+    if (err) this.setState({ credentialsStatus: err });
+    else this._setModalVisible(true);
   };
 }

@@ -62,7 +62,7 @@ export default class LogInScreen extends Component {
             style={styles.input}
           />
 
-          <Text style={styles.errorStatusIndicator}>{this.state.credentialsStatus}</Text>
+          <Text style={styles.errorStatusIndicator}>{this._capitalize(this.state.credentialsStatus)}</Text>
 
           <Button title={"Create account"} style={styles.input} onPress={this._confirm} />
 
@@ -142,5 +142,12 @@ export default class LogInScreen extends Component {
   _handleRegister = err => {
     if (err) this._credentialsStatus(err);
     else this._setModalVisible(true);
+  };
+
+  /**
+   *  Capitalizes the first letter in `string` if `string` is defined.
+   */
+  _capitalize = string => {
+    return string ? string.charAt(0).toUpperCase() + string.substring(1) : string;
   };
 }

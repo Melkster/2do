@@ -35,7 +35,6 @@ module.exports = {
 
   // Adds a task to the provided listID with the provided text
   // Returns the ID of the newly created task
-  // TODO, make it send to rooms when it is implemented
   addTask: async function(database, listID, value) {
     var id = new objectID();
     var taskToInsert = {
@@ -163,7 +162,7 @@ module.exports = {
     var fields = { projection: { _id: 0, name: 0, users: 0 } };
     try {
       const result = await database.collection("groups").findOne(query, fields);
-      return result;
+      return result.lists;
     } catch (err) {
       throw err;
     }
@@ -215,11 +214,26 @@ module.exports = {
     }
   },
 
+  // Finds the user with the unique username and returns the whole user object
   getUser: async function(database, username) {
     var userToFind = { name: username };
     try {
       const result = await database.collection("users").findOne(userToFind);
       return result;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Returns all the tasks from the given listID as an array
+  getTasks: async function(database, listID) {
+    var query = { "lists._id": listID };
+    var projection = {
+      projection: { _id: 0, "lists.name": 0, "lists._id": 0, lists: { $elemMatch: { _id: listID } } }
+    };
+    try {
+      const result = await database.collection("groups").findOne(query, projection);
+      return result.lists[0].tasks;
     } catch (err) {
       throw err;
     }

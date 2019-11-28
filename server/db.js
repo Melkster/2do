@@ -170,7 +170,7 @@ module.exports = {
     var fields = { projection: { _id: 0, name: 0, users: 0 } };
     try {
       const result = await database.collection("groups").findOne(query, fields);
-      return result;
+      return result.lists;
     } catch (err) {
       throw err;
     }

@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import { Image, ScrollView, View, SectionList, Text, TextInput, TouchableOpacity, Button } from "react-native";
-import { Cell, Section, TableView } from "react-native-tableview-simple";
+//import { Cell, Section, TableView } from "react-native-tableview-simple";
 import Swipeout from "react-native-swipeout";
 
-import Task from "./Task.js";
 import groupLogo from "./assets/groupSymbol.png";
 import data from "./data.json";
 import styles from "./styles.js";
@@ -13,6 +12,9 @@ import uncheckedIcon from "./assets/unchecked.png";
 // TODO: change icon
 import splash from "./assets/splash2.png";
 
+// TODO: used before the database (this can be removed later)
+fakeLists = ["List99", "List88", "List89", "List98"];
+
 export default class TasksScreen extends Component {
   constructor(props) {
     super(props);
@@ -21,19 +23,29 @@ export default class TasksScreen extends Component {
     listID = this.props.navigation.getParam("id");
     parentID = this.props.navigation.getParam("parentID");
     listname = "List" + parentID + listID;
-
-    checkedTasks = data[listname].tasks.filter(task => task.checked);
-    uncheckedTasks = data[listname].tasks.filter(task => !task.checked);
-    this.state = { checked: checkedTasks, unchecked: uncheckedTasks };
+    if (listID == -1) {
+      checkedTasks = [];
+      uncheckedTasks = [];
+    } else {
+      checkedTasks = data[listname].tasks.filter(task => task.checked);
+      uncheckedTasks = data[listname].tasks.filter(task => !task.checked);
+    }
+    this.state = { unchecked: uncheckedTasks, checked: checkedTasks };
   }
 
   // set the title for the page
   static navigationOptions = ({ navigation }) => {
     listId = navigation.getParam("id");
     parentID = navigation.getParam("parentID");
-    title = "List" + parentID + listId;
+    listname = "List" + parentID + listId;
+
+    if (listname in fakeLists) {
+      title = data[title].name;
+    } else {
+      title = "unknown list";
+    }
     return {
-      title: data[title].name,
+      title: title,
       // TODO: change the button to an icon
       headerRight: <Button title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
     };
@@ -108,7 +120,7 @@ export default class TasksScreen extends Component {
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
                   <TouchableOpacity onPress={this.createNewTask}>
-                    <Text style={styles.addNewTask}>{item.value}</Text>
+                    <Text style={styles.addNewItem}>{item.value}</Text>
                   </TouchableOpacity>
                 </View>
               );

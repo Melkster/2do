@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   uncheckedTask: {
     padding: 20
   },
-  addNewTask: {
+  addNewItem: {
     padding: 20
   }
 });

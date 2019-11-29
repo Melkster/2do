@@ -16,6 +16,11 @@ export default class ListsScreen extends Component {
     groupID = this.props.navigation.getParam("id");
     groupname = "List" + groupID;
     lists = data[groupname];
+
+    // check if the group exist (TODO: fix this code when connected to DB)
+    if (!lists) {
+      lists = [];
+    }
     this.state = { lists: lists };
   }
 
@@ -99,7 +104,7 @@ export default class ListsScreen extends Component {
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
                   <TouchableOpacity onPress={this.createNewList}>
-                    <Text style={styles.addNewTask}>{item.value}</Text>
+                    <Text style={styles.addNewItem}>{item.value}</Text>
                   </TouchableOpacity>
                 </View>
               );
@@ -113,8 +118,7 @@ export default class ListsScreen extends Component {
 
   createNewList = () => {
     //TODO: get a new list _from DB_ with empty task object.
-    id = Math.floor(Math.random() * 100) + 1;
-    newList = { id: id, name: "" };
+    newList = { id: -1, name: "" };
 
     this.state.lists.push(newList);
     this.setState({ lists: this.state.lists });

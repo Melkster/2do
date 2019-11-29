@@ -1,39 +1,39 @@
 var io = require("socket.io-client");
-<<<<<<< HEAD
-var socket = io.connect("http://192.168.43.229:3000");
-=======
-var socket = io.connect("http://192.168.43.254:3000");
->>>>>>> socket-connection
-
+//var socket = io.connect("http://192.168.43.229:3000");
+var socket = io.connect("http://localhost:3000");
 var readline = require("readline-sync");
-
+var objectID = require("mongodb").ObjectID;
 // Add a connect listener
 socket.on("connect", socket => {
   console.log("Connected!");
 });
 
-//var group = readline.question("what room to join: ")
-///socket.emit('join group', group);
-socket.on("has joined", msg => {
-  console.log(msg);
-});
-socket.on("message", msg => {
-  console.log(msg);
+socket.emit("createGroup", 111, "group1");
+socket.on("createGroup", (groupID, err) => {
+  //socket.emit("deleteGroup", groupID);
+  socket.emit("createList", groupID, "List1");
 });
 
-socket.on("error", msg => {
-  console.log(msg);
+socket.on("createList", (listID, err) => {
+  //socket.emit("deleteList", listID);
+  socket.emit("addTask", listID, "task1");
+  socket.emit("renameList", listID, "NEW NEW NEW LIST");
+  socket.on("addTask", (taskID, err) => {
+    socket.emit("editTask", listID, taskID, "NYYTTTTTT VALUE");
+    // socket.emit("deleteTask", taskID);
+    // socket.emit("deleteList", listID);
+    //socket.emit("deleteTask", taskID);
+    // socket.emit("checkTask", listID, taskID);
+    // socket.on("checkTask", (taskID, err) => {
+    //   console.log(taskID, err);
+    //   socket.emit("uncheckTask", listID, taskID);
+    // });
+  });
 });
 
-socket.on("success", msg => {
-  console.log(msg);
+socket.emit("register", "axel", "123123");
+socket.emit("authenticate", "axel", "12a3");
+socket.emit("authenticate", "axel", "123123");
+socket.on("authenticate", (id, err) => {
+  console.log(id, err);
 });
-
-socket.on("groupCreated", msg => {
-  console.log(msg);
-});
-
-//socket.emit('chat message', readline.question("any message to the group? "), group);
-socket.emit("createGroup", "1000", "100");
-// socket.emit("addTask", "100", "100", readline.question("what task to add? "));
-socket.emit("authenticate", "", "melkersuger");

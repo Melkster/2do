@@ -62,3 +62,4 @@ typings/
 
 # expo
 .expo/
+server/data/

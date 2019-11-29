@@ -1,19 +1,21 @@
 import React, { Component } from "react";
 import {
-  ActivityIndicator,
+  Alert,
   AsyncStorage,
   Button,
-  StatusBar,
-  StyleSheet,
-  View,
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
   TextInput,
-  Text
+  View,
+  Text,
+  TouchableOpacity
 } from "react-native";
 import socket from "./socket";
 import styles from "./styles";
+import { Separator } from "react-native-tableview-simple";
+
+failed_error = "Login failed";
 
 export default class LogInScreen extends Component {
   constructor(props) {
@@ -26,46 +28,73 @@ export default class LogInScreen extends Component {
   }
 
   static navigationOptions = {
-    title: "2do log in"
+    title: "2Do log in"
   };
 
   render() {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView behavior="height" style={styles.container} onPress={Keyboard.dismiss}>
-          <TextInput
-            value={this.state.username}
-            onChangeText={username => this.setState({ username })}
-            placeholder={"Username"}
-            style={styles.input}
-          />
-          <TextInput
-            value={this.state.password}
-            onChangeText={password => this.setState({ password })}
-            placeholder={"Password"}
-            secureTextEntry={true}
-            style={styles.input}
-          />
-          <Button
-            title={"Login"}
-            style={styles.input}
-            onPress={() => this._signInAsync(this.state.username, this.state.password)}
-          />
-
-          <Text>{this.state.username}</Text>
-          <Text>{this.state.password}</Text>
+          <View style={styles.container}>
+            <TextInput
+              value={this.state.username}
+              onChangeText={username => this.setState({ username })}
+              placeholder={"Username"}
+              style={styles.input}
+            />
+            <TextInput
+              value={this.state.password}
+              onChangeText={password => this.setState({ password })}
+              placeholder={"Password"}
+              secureTextEntry={true}
+              style={styles.input}
+            />
+            <Button
+              title={"Login"}
+              style={styles.input}
+              onPress={() => this._logInAsync(this.state.username, this.state.password)}
+            />
+            <Separator />
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={() => this.props.navigation.navigate("CreateAccount", { setFields: this.setFields })}
+            >
+              <Text>Create account</Text>
+            </TouchableOpacity>
+          </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     );
   }
 
-  _signInAsync = async (username, password) => {
-    if (!username || !password) return Alert.alert("Login failed", "Please enter your username and password");
-    // socket.emit("authenticate", username, password);
-    // await socket.on("authenticate", userID => (this.props = { userID }));
-    // socket.emit("getGroups", userID);
+  /**
+   * Logs in user and fetches all groups.
+   *
+   * Expects a response to an `authenticate` event with a `userID` and `err`. If
+   * there is no `err`, expects a response from a `getGroups` event
+   * containing... TODO
+   */
+  _logInAsync = (username, password) => {
+    if (!username || !password) return Alert.alert(failed_error, "Please enter your username and password");
 
-    await AsyncStorage.setItem("userToken", "signedIn");
-    this.props.navigation.navigate("App");
+    socket.emit("authenticate", username, password);
+    socket.on("authenticate", (userID, err) => {
+      if (err) return Alert.alert(failed_error, err);
+
+      socket.emit("getGroups", userID);
+      socket.on("getGroups", (userID, err) => {
+        if (err) return Alert.alert(failed_error, err);
+        AsyncStorage.setItem("userToken", String(userID));
+        this.props.navigation.navigate("App", { userID });
+      });
+    });
+  };
+
+  /**
+   * Intended to be used as a callback function to set username and password
+   * when navigating backfrom account creation page
+   */
+  setFields = (username, password) => {
+    this.setState({ username, password });
   };
 }

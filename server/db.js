@@ -1,13 +1,7 @@
-var mongo = require("mongodb").MongoClient;
 var objectID = require("mongodb").ObjectID;
-// var url = "mongodb://localhost:27017/data/db";
-
-// Creates a group and inserts it into the database with the given userID
-// Returns the ID of the newly created group
 
 module.exports = {
   // Creates a group and inserts it into the database with the given userID
-
   // Also inserts the groupID in the users groups array
   // Returns the ID of the newly created group
   createGroup: async function(database, userID, groupName) {
@@ -25,7 +19,6 @@ module.exports = {
 
   //Inserts a list into the given group ID with given list name
   //Returns the ID of the newly created list
-
   createList: async function(database, groupID, listName) {
     var id = new objectID();
     var listToInsert = {
@@ -57,7 +50,6 @@ module.exports = {
   },
 
   // Deletes a group with the given groupID
-
   // Also removes the groupID from the groups array from all the users who is in the group
   deleteGroup: async function(database, groupID) {
     var usersToUpdate = { $pull: { groups: groupID } };
@@ -75,7 +67,6 @@ module.exports = {
     var listToRemove = { $pull: { lists: { _id: listID } } };
     var query = { "lists._id": listID };
     try {
-      console.log("delete");
       await database.collection("groups").updateOne(query, listToRemove);
     } catch (err) {
       throw err;
@@ -163,7 +154,6 @@ module.exports = {
     }
   },
 
-  // TODO not correct version on github??
   // Returns the list field from the group with the given groupID
   getLists: async function(database, groupID) {
     var query = { _id: groupID };
@@ -222,6 +212,7 @@ module.exports = {
     }
   },
 
+  // Finds the user with the unique username and returns the whole user object
   getUser: async function(database, username) {
     var userToFind = { name: username };
     try {

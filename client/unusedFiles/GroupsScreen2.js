@@ -24,7 +24,7 @@ export default class GroupsScreen extends Component {
 
     // get the groups for the user _from DB_
     var groups = data.Groups;
-    this.state = { groups: groups, text: "test" };
+    this.state = { modalVisible: false, groups: groups, text: "" };
   }
 
   static navigationOptions = ({ navigation }) => {
@@ -37,14 +37,32 @@ export default class GroupsScreen extends Component {
   };
 
   componentDidMount() {
-    this.props.navigation.setParams({ addButton: this.createNewGroup });
+    this.props.navigation.setParams({ addButton: this.addGroup });
   }
 
   render() {
     return (
       <View>
+        <Modal animationType="slide" visible={this.state.modalVisible}>
+          <View style={{ alignItems: "center", paddingTop: 100 }}>
+            <TextInput
+              // "Modal" is the pop-up screen used to greate new groups
+              placeholderTextColor={"grey"}
+              placeholder={"Name of the group"}
+              onChangeText={text => this.setState({ text: text })}
+              value={this.state.text}
+              style={styles.uncheckedTask}
+            />
+            <Button
+              title={"Create"}
+              onPress={() => {
+                this.createNewGroup();
+              }}
+            ></Button>
+          </View>
+        </Modal>
         <SectionList
-          // we have one section for the actual groups and one for the "add group"-option
+          // we only have one section with the users groups
           sections={[
             { id: 0, data: this.state.groups, icon: groupLogo },
             { id: 1, data: [{ value: "Click to add new group" }], icon: splash }
@@ -69,8 +87,12 @@ export default class GroupsScreen extends Component {
                   <View style={styles.checkbox}>
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
-                  <TouchableOpacity onPress={this.createNewGroup}>
-                    <Text style={styles.addNewItem}>{item.value}</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.setModalVisibility(true);
+                    }}
+                  >
+                    <Text style={styles.addNewTask}>{item.value}</Text>
                   </TouchableOpacity>
                 </View>
               );
@@ -85,14 +107,30 @@ export default class GroupsScreen extends Component {
     );
   }
 
-  createNewGroup = () => {
+  setModalVisibility(visible) {
+    this.setState({ modalVisible: visible });
+  }
+
+  createNewGroup() {
     //TODO: get a new group _from DB_
-    newGroup = { id: 0, name: "fake-group", users: [] };
+    id = Math.floor(Math.random() * 100) + 1;
+    newGroup = { id: id, name: this.state.text, users: [] };
+
     this.state.groups.push(newGroup);
-    this.setState({ groups: this.state.groups });
+    this.setState({ text: "" });
+    this.setModalVisibility(false);
+  }
+
+  addGroup = () => {
+    //TODO: add a new group
+    //this.state.checked.push(item);
+    console.log("group added");
+
+    this.state.unchecked.push(newTask);
+    unchecked = this.state.unchecked;
+    this.setState({ unchecked: unchecked });
   };
 
-  //TODO: remove if not used?
   enterList = list => {
     this.props.navigation.navigate("Lists", { id: list.id, title: list.name, addButton: null });
   };

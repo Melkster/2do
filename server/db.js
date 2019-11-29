@@ -23,7 +23,6 @@ module.exports = {
     }
   },
 
-
   //Inserts a list into the given group ID with given list name
   //Returns the ID of the newly created list
 
@@ -71,7 +70,6 @@ module.exports = {
     }
   },
 
-
   // Deletes a list with the given listID from the given groupID
   deleteList: async function(database, listID) {
     var listToRemove = { $pull: { lists: { _id: listID } } };
@@ -83,7 +81,6 @@ module.exports = {
       throw err;
     }
   },
-
 
   // Deletes a task with the given taskID
   deleteTask: async function(database, taskID) {
@@ -106,7 +103,6 @@ module.exports = {
       throw err;
     }
   },
-
 
   // Renames a list with the given listID with the new newName
   renameList: async function(database, listID, newName) {
@@ -167,7 +163,6 @@ module.exports = {
     }
   },
 
-
   // TODO not correct version on github??
   // Returns the list field from the group with the given groupID
   getLists: async function(database, groupID) {
@@ -175,7 +170,7 @@ module.exports = {
     var fields = { projection: { _id: 0, name: 0, users: 0 } };
     try {
       const result = await database.collection("groups").findOne(query, fields);
-      return result;
+      return result.lists;
     } catch (err) {
       throw err;
     }
@@ -220,7 +215,6 @@ module.exports = {
       groups: []
     };
     try {
-
       const result = await database.collection("users").insertOne(userToInsert);
       return result.ops[0]._id;
     } catch (err) {
@@ -233,6 +227,20 @@ module.exports = {
     try {
       const result = await database.collection("users").findOne(userToFind);
       return result;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Returns all the tasks from the given listID as an array
+  getTasks: async function(database, listID) {
+    var query = { "lists._id": listID };
+    var projection = {
+      projection: { _id: 0, "lists.name": 0, "lists._id": 0, lists: { $elemMatch: { _id: listID } } }
+    };
+    try {
+      const result = await database.collection("groups").findOne(query, projection);
+      return result.lists[0].tasks;
     } catch (err) {
       throw err;
     }

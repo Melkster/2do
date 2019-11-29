@@ -15,8 +15,10 @@ socket.on("createGroup", (groupID, err) => {
 });
 
 socket.on("createList", (listID, err) => {
-  //socket.emit("deleteList", listID);
+  //socket.emit("deleteList", listID)
   socket.emit("addTask", listID, "task1");
+  socket.emit("addTask", listID, "task2");
+  socket.emit("addTask", listID, "task3");
   socket.emit("renameList", listID, "NEW NEW NEW LIST");
   socket.on("addTask", (taskID, err) => {
     socket.emit("editTask", listID, taskID, "NYYTTTTTT VALUE");
@@ -29,11 +31,15 @@ socket.on("createList", (listID, err) => {
     //   socket.emit("uncheckTask", listID, taskID);
     // });
   });
+  socket.emit("getTasks", listID);
+  socket.on("getTasks", (tasks, err) => {
+    console.log(tasks, err);
+  });
 });
 
-socket.emit("register", "axel", "123123");
-socket.emit("authenticate", "axel", "12a3");
-socket.emit("authenticate", "axel", "123123");
-socket.on("authenticate", (id, err) => {
-  console.log(id, err);
-});
+// socket.emit("register", "axel", "123123");
+// socket.emit("authenticate", "axel", "12a3");
+// socket.emit("authenticate", "axel", "123123");
+// socket.on("authenticate", (id, err) => {
+//   console.log(id, err);
+// });

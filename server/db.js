@@ -67,7 +67,6 @@ module.exports = {
     var listToRemove = { $pull: { lists: { _id: listID } } };
     var query = { "lists._id": listID };
     try {
-      console.log("delete");
       await database.collection("groups").updateOne(query, listToRemove);
     } catch (err) {
       throw err;
@@ -155,7 +154,6 @@ module.exports = {
     }
   },
 
-  // TODO not correct version on github??
   // Returns the list field from the group with the given groupID
   getLists: async function(database, groupID) {
     var query = { _id: groupID };

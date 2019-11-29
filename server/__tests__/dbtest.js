@@ -1,7 +1,7 @@
 const { MongoClient } = require("mongodb");
 const dbfunc = require("../db");
 
-describe("insert", () => {
+describe("db tests", () => {
   let connection;
   let db;
 
@@ -21,7 +21,6 @@ describe("insert", () => {
     // Database collections
     const users = db.collection("users");
     const groups = db.collection("groups");
-
     // Variables
     var userID;
     var groupID;
@@ -44,7 +43,7 @@ describe("insert", () => {
     mockUser = { _id: userID, name: username, passwordHash: passwordHash, groups: [] };
     expect(registeredUser).toEqual(mockUser);
 
-    // Tests: createGroup, getUser 
+    // Tests: createGroup, getUser
     groupID = await dbfunc.createGroup(db, userID, groupName);
     createdGroup = await groups.findOne({ _id: groupID });
     mockGroup = { _id: groupID, name: groupName, users: [userID], lists: [] };
@@ -53,7 +52,7 @@ describe("insert", () => {
     mockUser.groups.push(groupID);
     expect(registeredUser).toEqual(mockUser);
 
-    // Tests: createList 
+    // Tests: createList
     listID = await dbfunc.createList(db, groupID, listName);
     createdGroup = await groups.findOne({ _id: groupID });
     mockGroup.lists.push({ _id: listID, name: listName, tasks: [] });
@@ -109,17 +108,41 @@ describe("insert", () => {
 
     // Tests: getTasks
     var tasks = await dbfunc.getTasks(db, listID);
-    var mockTasks = [{ _id: taskID, value: taskValue, checked: false}];
+    var mockTasks = [{ _id: taskID, value: taskValue, checked: false }];
     expect(tasks).toEqual(mockTasks);
 
     // Tests: getLists
     var list = await dbfunc.getLists(db, groupID);
-    var mockList = [ {_id: listID, name: listName, tasks: mockTasks} ];
+    var mockList = [{ _id: listID, name: listName, tasks: mockTasks }];
     expect(list).toEqual(mockList);
 
     // Tests: leaveGroup
+    await dbfunc.leaveGroup(db, groupID, userID);
+    createdGroup = await groups.findOne({ _id: groupID });
+    mockGroup.users = [];
+    expect(createdGroup).toEqual(mockGroup);
+    registeredUser = await dbfunc.getUser(db, username);
+    mockUser.groups = [];
+    expect(registeredUser).toEqual(mockUser);
+
     // Tests: deleteTask
-    // Tests: deleteList  
-    // Tests: deleteGroup 
+    await dbfunc.deleteTask(db, taskID);
+    createdGroup = await groups.findOne({ _id: groupID });
+    mockGroup.lists[0].tasks = [];
+    expect(createdGroup).toEqual(mockGroup);
+
+    // Tests: deleteList
+    await dbfunc.deleteList(db, listID);
+    createdGroup = await groups.findOne({ _id: groupID });
+    mockGroup.lists = [];
+    expect(createdGroup).toEqual(mockGroup);
+
+    // Tests: deleteGroup
+    await dbfunc.inviteUser(db, groupID, userID);
+    await dbfunc.deleteGroup(db, groupID);
+    createdGroup = await groups.findOne({ _id: groupID });
+    expect(createdGroup).toEqual(null);
+    registeredUser = await dbfunc.getUser(db, username);
+    expect(registeredUser).toEqual(mockUser);
   });
 });

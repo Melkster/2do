@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import { Image, Button, ScrollView, View, SectionList, Text, TextInput, TouchableOpacity } from "react-native";
 import Swipeout from "react-native-swipeout";
 
-import listLogo from "./assets/listSymbol.png";
-import splash from "./assets/splash.png";
+import listIcon from "./assets/listIcon.png";
+import newListIcon from "./assets/newListIcon.png";
 
 import data from "./data.json";
 import styles from "./styles.js";
@@ -46,14 +46,14 @@ export default class ListsScreen extends Component {
               id: 0,
               title: "Lists",
               data: this.state.lists,
-              icon: listLogo,
+              icon: listIcon,
               header: <Text style={styles.listHeader}> Lists </Text>
             },
             {
               id: 1,
               title: null,
               data: [{ value: "Click to add new list" }],
-              icon: splash,
+              icon: newListIcon,
               header: null
             }
           ]}
@@ -81,7 +81,9 @@ export default class ListsScreen extends Component {
                       this.props.navigation.navigate("Tasks", { id: item.id, parentID: groupID, addButton: null });
                     }}
                   >
-                    <Image source={listLogo} style={styles.listImage} />
+                    <View style={styles.checkbox}>
+                      <Image source={section.icon} style={styles.listImage} />
+                    </View>
                     <TextInput
                       onChangeText={text => {
                         this.state.lists[index].name = text;
@@ -99,12 +101,12 @@ export default class ListsScreen extends Component {
               );
             } else {
               return (
-                <View style={styles.listItem}>
+                <View style={styles.addNewItem}>
                   <View style={styles.checkbox}>
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
                   <TouchableOpacity onPress={this.createNewList}>
-                    <Text style={styles.addNewItem}>{item.value}</Text>
+                    <Text style={styles.listText}>{item.value}</Text>
                   </TouchableOpacity>
                 </View>
               );

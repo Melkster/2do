@@ -13,8 +13,8 @@ import {
   TouchableHighlight
 } from "react-native";
 
-import groupLogo from "./assets/groupSymbol.png";
-import splash from "./assets/splash.png";
+import groupIcon from "./assets/groupIcon.png";
+import newGroupIcon from "./assets/newGroupIcon.png";
 import data from "./data.json";
 import styles from "./styles.js";
 
@@ -32,7 +32,11 @@ export default class GroupsScreen extends Component {
       title: "Your groups",
       // The "add button" in the top-right corner
       // TODO: change the button to an icon
-      headerRight: <Button title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+      headerRight: (
+        <TouchableOpacity onPress={navigation.getParam("addButton")} style={styles.addButton}>
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
+      )
     };
   };
 
@@ -46,8 +50,8 @@ export default class GroupsScreen extends Component {
         <SectionList
           // we have one section for the actual groups and one for the "add group"-option
           sections={[
-            { id: 0, data: this.state.groups, icon: groupLogo },
-            { id: 1, data: [{ value: "Click to add new group" }], icon: splash }
+            { id: 0, data: this.state.groups, icon: groupIcon },
+            { id: 1, data: [{ value: "Click to add new group" }], icon: newGroupIcon }
           ]}
           // "item" corresponds to a group in the section. When clicked we navigate to the lists of that group
           renderItem={({ item, index, section }) => {
@@ -59,18 +63,20 @@ export default class GroupsScreen extends Component {
                     this.props.navigation.navigate("Lists", { id: item.id, title: item.name, addButton: null });
                   }}
                 >
-                  <Image source={groupLogo} style={styles.listImage} />
+                  <View style={styles.checkbox}>
+                    <Image source={section.icon} style={styles.listImage} />
+                  </View>
                   <Text style={styles.listText}>{item.name}</Text>
                 </TouchableOpacity>
               );
             } else {
               return (
-                <View style={styles.listItem}>
+                <View style={styles.addNewItem}>
                   <View style={styles.checkbox}>
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
                   <TouchableOpacity onPress={this.createNewGroup}>
-                    <Text style={styles.addNewItem}>{item.value}</Text>
+                    <Text style={styles.listText}>{item.value}</Text>
                   </TouchableOpacity>
                 </View>
               );

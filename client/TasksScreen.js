@@ -3,14 +3,11 @@ import { Image, ScrollView, View, SectionList, Text, TextInput, TouchableOpacity
 //import { Cell, Section, TableView } from "react-native-tableview-simple";
 import Swipeout from "react-native-swipeout";
 
-import groupLogo from "./assets/groupSymbol.png";
 import data from "./data.json";
 import styles from "./styles.js";
 import checkedIcon from "./assets/checked.png";
 import uncheckedIcon from "./assets/unchecked.png";
-
-// TODO: change icon
-import splash from "./assets/splash2.png";
+import newTaskIcon from "./assets/newTaskIcon.png";
 
 // TODO: used before the database (this can be removed later)
 fakeLists = ["List99", "List88", "List89", "List98"];
@@ -69,7 +66,7 @@ export default class TasksScreen extends Component {
         id: 1,
         title: null,
         data: [{ value: "Type here to add a task!" }],
-        icon: splash,
+        icon: newTaskIcon,
         textstyle: styles.addNewTask,
         header: null
       },
@@ -79,7 +76,7 @@ export default class TasksScreen extends Component {
         data: this.state.checked,
         icon: checkedIcon,
         textstyle: styles.checkedTask,
-        header: <Text style={styles.listHeader}> Done </Text>
+        header: <Text style={styles.listHeaderCheckedTasks}> Done </Text>
       }
     ];
 
@@ -115,12 +112,12 @@ export default class TasksScreen extends Component {
               );
             } else {
               return (
-                <View style={styles.listItem}>
+                <View style={styles.addNewItem}>
                   <View style={styles.checkbox}>
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
                   <TouchableOpacity onPress={this.createNewTask}>
-                    <Text style={styles.addNewItem}>{item.value}</Text>
+                    <Text style={styles.listText}>{item.value}</Text>
                   </TouchableOpacity>
                 </View>
               );

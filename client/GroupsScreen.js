@@ -15,6 +15,8 @@ import {
 
 import groupIcon from "./assets/groupIcon.png";
 import newGroupIcon from "./assets/newGroupIcon.png";
+import plusIcon from "./assets/plusIcon.png";
+
 import data from "./data.json";
 import styles from "./styles.js";
 
@@ -56,6 +58,7 @@ export default class GroupsScreen extends Component {
           // "item" corresponds to a group in the section. When clicked we navigate to the lists of that group
           renderItem={({ item, index, section }) => {
             if (section.id == 0) {
+              // this is the section for all lists
               return (
                 <TouchableOpacity
                   style={styles.listItem}
@@ -70,6 +73,7 @@ export default class GroupsScreen extends Component {
                 </TouchableOpacity>
               );
             } else {
+              // this is the section of the "add a new list" item
               return (
                 <View style={styles.addNewItem}>
                   <View style={styles.checkbox}>

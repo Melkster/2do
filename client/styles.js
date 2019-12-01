@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
     flexDirection: "row"
   },
+  // CHANGE: lägg till en större text-ruta
   listText: {
     flex: 1,
     padding: 15,

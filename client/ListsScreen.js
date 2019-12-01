@@ -41,6 +41,7 @@ export default class ListsScreen extends Component {
     return (
       <View>
         <SectionList
+          // we have one section for the actual lists and one for the "add list"-option
           sections={[
             {
               id: 0,

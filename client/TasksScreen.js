@@ -53,6 +53,7 @@ export default class TasksScreen extends Component {
   }
 
   render() {
+    // we have sections for: unchecked tasks, checked tasks and one for the "add task"-option
     sections = [
       {
         id: 0,
@@ -83,7 +84,6 @@ export default class TasksScreen extends Component {
     return (
       <View>
         <SectionList
-          // 2 different sections: for checked and unchecked tasks
           sections={sections}
           renderSectionHeader={({ section }) => section.header}
           renderItem={({ item, index, section }) => {

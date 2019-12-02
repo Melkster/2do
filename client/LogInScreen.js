@@ -25,13 +25,23 @@ export default class LogInScreen extends Component {
       username: "",
       password: ""
     };
-
-    socket.on("authenticate", (user, err) => this._handleAuthenticate(user, err));
   }
 
   static navigationOptions = {
     title: "2Do log in"
   };
+
+  componentDidMount() {
+    this.didFocusSubscription = this.props.navigation.addListener("didFocus", () => {
+      // `didFocus` is necessary because the `authenticate` listeners dissappears every time focus is lost
+      socket.on("authenticate", (user, err) => this._handleAuthenticate(user, err));
+    });
+  }
+
+  componentWillUnmount() {
+    socket.off("authenticate"); // Remove socket listeners on unmount
+    this.didFocusSubscription.remove();
+  }
 
   render() {
     return (
@@ -73,8 +83,11 @@ export default class LogInScreen extends Component {
    * Sends an `authenticate` event if `username` and `password` are defined.
    */
   _logInAsync = (username, password) => {
-    if (!username || !password) Alert.alert(failed_error, "Please enter your username and password");
-    else socket.emit("authenticate", username, password);
+    if (!username || !password) {
+      Alert.alert(failed_error, "Please enter your username and password");
+    } else {
+      socket.emit("authenticate", username, password);
+    }
   };
 
   /**

@@ -88,13 +88,12 @@ export default class LogInScreen extends Component {
   /**
    * Sets this.state.credentialsStatus.
    *
-   * Checks
+   * If the two passwords match, it sets this.state.credentialsStatus to
+   * `state`, otherwise it sets it to "Paswords don't match".
    */
   _credentialsStatus = status => {
     if (this.state.password1 && this.state.password2 && this.state.password1 !== this.state.password2) {
-      if (this.state.password1 !== this.state.password2) {
-        status = "Passwords don't match";
-      }
+      status = "Passwords don't match";
     }
 
     if (status !== this.state.credentialsStatus) {

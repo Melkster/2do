@@ -18,14 +18,15 @@ socket.on("connect", socket => {
 
 socket.emit("register", username, password);
 socket.on("register", (id, err) => {
-  userid = id;
+    userid = id;
+    console.log(id, "aaaa", userid);
 
   socket.emit("authenticate", username, password);
   socket.on("authenticate", (res, err) => {
-    user = res;
+      console.log(userid);
 
-    socket.emit("createGroup", userid, username, "group1");
-    socket.on("createGroup", (groups, err) => {
+    socket.emit("createGroup", userid, "group1");
+      socket.on("createGroup", (groups, err) => {
       socket.emit("createList", groups[0]._id, "list1");
       socket.on("createList", (lists, err) => {
         socket.emit("addTask", lists[0]._id, "buy milk");
@@ -39,7 +40,7 @@ socket.on("register", (id, err) => {
         });
       });
     });
-    socket.emit("getGroups", username);
+    socket.emit("getGroups", userid);
     socket.on("getGroups", (groups, err) => {
       console.log(groups);
     });

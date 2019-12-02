@@ -34,10 +34,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       var id = groupID;
       socket.join(id);
       console.log(id);
-      io.in(id).emit(
-        "has joined",
-        "A user has joined the group-room: " + groupID
-      );
+      io.in(id).emit("has joined", "A user has joined the group-room: " + groupID);
     });
 
     // Returns all lists in a group given a groupID
@@ -84,12 +81,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns all name and ID for all groups that a user belongs to
     socket.on("createGroup", async (userID, groupName) => {
       try {
-        var groupID = await dbfunc.createGroup(
-          database,
-          new objectID(userID),
-          groupName
-        );
-        var groups = await dbfunc.getGroups(database, userID);
+        console.log(userID, groupName);
+        var groupID = await dbfunc.createGroup(database, new objectID(userID), groupName);
+        var groups = await dbfunc.getGroups(database, new objectID(userID));
         console.log(groups);
         io.emit("createGroup", groups, null);
       } catch (e) {
@@ -117,11 +111,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns the list of all tasks in the list after the uncheck is made
     socket.on("uncheckTask", async (listID, taskID) => {
       try {
-        dbfunc.uncheckTask(
-          database,
-          new objectID(listID),
-          new objectID(taskID)
-        );
+        dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(listID)
         io.emit("uncheckTask", tasks, null);
@@ -163,7 +153,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("deleteGroup", async (groupID, userID) => {
       try {
         await dbfunc.deleteGroup(database, new objectID(groupID));
-        var groups = await dbfunc.getGroups(database, userID);
+        var groups = await dbfunc.getGroups(database, new objectID(userID));
         io.emit("deleteGroup", groups, null);
       } catch (e) {
         io.emit("deleteGroup", null, "Could not delete Group");
@@ -204,7 +194,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("renameGroup", async (groupID, userID, value) => {
       try {
         await dbfunc.renameGroup(database, new objectID(groupID), value);
-        var groups = await dbfunc.getGroups(database, userID);
+        var groups = await dbfunc.getGroups(database, new objectID(userID));
         io.emit("renameGroup", groups, null);
       } catch (e) {
         io.emit("renameGroup", null, "Could not rename group");
@@ -223,11 +213,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         if (!(await dbfunc.getUser(database, username))) {
           try {
             var passwordHash = await hash_password(password);
-            var userID = await dbfunc.registerUser(
-              database,
-              username,
-              passwordHash
-            );
+            var userID = await dbfunc.registerUser(database, username, passwordHash);
             io.emit("register", userID, null);
           } catch (e) {
             io.emit("register", null, "could not register user");
@@ -268,11 +254,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Invites a new user to a group given the userID of the user and the groupID of the group
     socket.on("inviteUser", async (groupID, userID) => {
       try {
-        await dbfunc.inviteUser(
-          database,
-          new objectID(groupID),
-          new objectID(userID)
-        );
+        await dbfunc.inviteUser(database, new objectID(groupID), new objectID(userID));
         io.emit("inviteUser", true, null);
       } catch (e) {
         console.log(e);
@@ -283,11 +265,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // removes a user from a group given groupID and userID
     socket.on("leaveGroup", async (groupID, userID) => {
       try {
-        dbfunc.leaveGroup(
-          database,
-          new objectID(groupID),
-          new objectID(userID)
-        );
+        dbfunc.leaveGroup(database, new objectID(groupID), new objectID(userID));
         io.emit("leaveGroup", groupID, null);
       } catch (e) {
         console.log(e);
@@ -335,7 +313,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns list of groups that a user belongs to, given username
     socket.on("getGroups", async userID => {
       try {
-        var groups = await dbfunc.getGroups(database, userID);
+        var groups = await dbfunc.getGroups(database, new objectID(userID));
         io.emit("getGroups", groups, null);
       } catch (e) {
         console.log(e);

@@ -5,13 +5,21 @@ module.exports = {
   // Returns the ID of the newly created group
   createGroup: async function(database, userID, groupName) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
-    var groupQuery = { _id: userID };
+    var userQuery = { _id: userID };
     try {
       const result = await database
         .collection("groups")
         .insertOne(groupToInsert);
+      if (!result) {
+        throw "Couldn't create a new group";
+      }
       var groupIDToInsert = { $push: { groups: result.ops[0]._id } };
-      await database.collection("users").updateOne(groupQuery, groupIDToInsert);
+      const userResult = await database
+        .collection("users")
+        .updateOne(userQuery, groupIDToInsert);
+      if (userResult.result.nModified == "0") {
+        throw "Couldn't insert the groupID in the user";
+      }
       return result.ops[0]._id;
     } catch (err) {
       throw err;
@@ -90,7 +98,9 @@ module.exports = {
     var newName = { $set: { name: newName } };
     var query = { _id: groupID };
     try {
-      await database.collection("groups").updateOne(query, newName);
+      const result = await database
+        .collection("groups")
+        .updateOne(query, newName);
     } catch (err) {
       throw err;
     }
@@ -167,6 +177,9 @@ module.exports = {
     var fields = { projection: { _id: 0, name: 0, users: 0 } };
     try {
       const result = await database.collection("groups").findOne(query, fields);
+      if (!result) {
+        throw "Couldn't find the group";
+      }
       return result.lists;
     } catch (err) {
       throw err;
@@ -215,7 +228,7 @@ module.exports = {
       const result = await database.collection("users").insertOne(userToInsert);
       return result.ops[0]._id;
     } catch (err) {
-      throw err;
+      throw "Already existing user";
     }
   },
 
@@ -252,8 +265,12 @@ module.exports = {
   },
 
   // Returns the ID and name of all the groups the username is in
-  getGroups: async function(database, username) {
-    var user = await this.getUser(database, username);
+  getGroups: async function(database, userID) {
+    var user;
+    var userQuery = { _id: userID };
+    try {
+      user = await database.collection("users").findOne(userQuery);
+    } catch (err) {}
     var ids = user.groups;
     var query = { _id: { $in: ids } };
     var projection = { projection: { users: 0, lists: 0 } };

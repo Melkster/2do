@@ -211,7 +211,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
           } else {
             io.emit("authenticate", null, "Authentication failed");
           }
-
         } catch (e) {
           console.log(e);
         }
@@ -248,13 +247,18 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         }
       } catch (e) {
         console.log(e);
-        io.emit("getUser", null, "Could not getUser");
+        io.emit("getUser", null, "Could not get user");
       }
     });
 
     socket.on("getTasks", async listID => {
-      var tasks = await dbfunc.getTasks(database, new objectID(listID));
-      io.emit("getTasks", tasks, null);
+      try {
+        var tasks = await dbfunc.getTasks(database, new objectID(listID));
+        io.emit("getTasks", tasks, null);
+      } catch (e) {
+        console.log(e);
+        io.emit("getTasks", null, "Could not get tasks");
+      }
     });
 
     socket.on("disconnect", () => {

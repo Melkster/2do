@@ -378,6 +378,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   db.close();
 });
 
-sdasdasdadsadsadsadshttp.listen(3000, "0.0.0.0", () => {
+http.listen(3000, "0.0.0.0", () => {
   console.log("Listening on localhost: 3000");
 });

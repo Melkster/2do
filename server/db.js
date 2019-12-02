@@ -1,20 +1,15 @@
-var mongo = require("mongodb").MongoClient;
 var objectID = require("mongodb").ObjectID;
-// var url = "mongodb://localhost:27017/data/db";
-
-// Creates a group and inserts it into the database with the given userID
-// Returns the ID of the newly created group
-
 module.exports = {
   // Creates a group and inserts it into the database with the given userID
-
   // Also inserts the groupID in the users groups array
   // Returns the ID of the newly created group
   createGroup: async function(database, userID, groupName) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
     var groupQuery = { _id: userID };
     try {
-      const result = await database.collection("groups").insertOne(groupToInsert);
+      const result = await database
+        .collection("groups")
+        .insertOne(groupToInsert);
       var groupIDToInsert = { $push: { groups: result.ops[0]._id } };
       await database.collection("users").updateOne(groupQuery, groupIDToInsert);
       return result.ops[0]._id;
@@ -25,7 +20,6 @@ module.exports = {
 
   //Inserts a list into the given group ID with given list name
   //Returns the ID of the newly created list
-
   createList: async function(database, groupID, listName) {
     var id = new objectID();
     var listToInsert = {
@@ -57,7 +51,6 @@ module.exports = {
   },
 
   // Deletes a group with the given groupID
-
   // Also removes the groupID from the groups array from all the users who is in the group
   deleteGroup: async function(database, groupID) {
     var usersToUpdate = { $pull: { groups: groupID } };
@@ -75,7 +68,6 @@ module.exports = {
     var listToRemove = { $pull: { lists: { _id: listID } } };
     var query = { "lists._id": listID };
     try {
-      console.log("delete");
       await database.collection("groups").updateOne(query, listToRemove);
     } catch (err) {
       throw err;
@@ -125,7 +117,9 @@ module.exports = {
     };
     var query = { "lists.tasks._id": taskID };
     try {
-      await database.collection("groups").updateOne(query, taskToEdit, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToEdit, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -141,7 +135,9 @@ module.exports = {
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("groups").updateOne(query, taskToCheck, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -157,13 +153,14 @@ module.exports = {
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("groups").updateOne(query, taskToCheck, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
   },
 
-  // TODO not correct version on github??
   // Returns the list field from the group with the given groupID
   getLists: async function(database, groupID) {
     var query = { _id: groupID };
@@ -222,6 +219,7 @@ module.exports = {
     }
   },
 
+  // Finds the user with the unique username and returns the whole user object
   getUser: async function(database, username) {
     var userToFind = { name: username };
     try {
@@ -236,11 +234,34 @@ module.exports = {
   getTasks: async function(database, listID) {
     var query = { "lists._id": listID };
     var projection = {
-      projection: { _id: 0, "lists.name": 0, "lists._id": 0, lists: { $elemMatch: { _id: listID } } }
+      projection: {
+        _id: 0,
+        "lists.name": 0,
+        "lists._id": 0,
+        lists: { $elemMatch: { _id: listID } }
+      }
     };
     try {
-      const result = await database.collection("groups").findOne(query, projection);
+      const result = await database
+        .collection("groups")
+        .findOne(query, projection);
       return result.lists[0].tasks;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Returns the ID and name of all the groups the username is in
+  getGroups: async function(database, username) {
+    var user = await this.getUser(database, username);
+    var ids = user.groups;
+    var query = { _id: { $in: ids } };
+    var projection = { projection: { users: 0, lists: 0 } };
+    try {
+      const result = await database
+        .collection("groups")
+        .find(query, projection);
+      return result.toArray();
     } catch (err) {
       throw err;
     }

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "install": "mkdir data"
+    "install": "mkdir data",
+    "testdb": "jest"
   },
   "license": "ISC",
   "dependencies": {
@@ -16,6 +17,8 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.1.3",
+    "jest": "^24.9.0",
     "nodemon": "^2.0.0"
   }
 }

@@ -3,49 +3,41 @@ var io = require("socket.io-client");
 var socket = io.connect("http://localhost:3000");
 var readline = require("readline-sync");
 var objectID = require("mongodb").ObjectID;
+
+var username = "michael";
+var password = "123123";
+var user;
+var userid;
+var groupid;
+var listid;
+
 // Add a connect listener
 socket.on("connect", socket => {
   console.log("Connected!");
 });
 
-socket.emit("createGroup", 111, "group1");
-socket.on("createGroup", (group, err) => {
-  //socket.emit("deleteGroup", groupID);
-  console.log(group);
-  socket.emit("createList", group, "List1");
-  socket.emit("getLists", group);
-  socket.on("getLists", (lists, err) => {
-    console.log(lists, err);
+socket.emit("register", username, password);
+socket.on("register", (id, err) => {
+  userid = id;
+
+  socket.emit("authenticate", username, password);
+  socket.on("authenticate", (res, err) => {
+    user = res;
+
+    socket.emit("createGroup", userid, username, "group1");
+    socket.on("createGroup", (groups, err) => {
+      socket.emit("createList", groups[0]._id, "list1");
+      socket.on("createList", (lists, err) => {
+        socket.emit("addTask", lists[0]._id, "buy milk");
+        socket.emit("addTask", lists[0]._id, "buy something");
+        socket.on("addTask", (tasks, err) => {
+          console.log(tasks, err);
+          socket.emit("checkTask", lists[0]._id, tasks[0]._id);
+        });
+        socket.on("checkTask", (tasks, err) => {
+          console.log(tasks, err);
+        });
+      });
+    });
   });
 });
-
-socket.on("createList", (listID, err) => {
-  //  socket.emit("deleteList", listID)
-  console.log(listID);
-  socket.emit("addTask", listID[0]._id, "task1");
-  // socket.emit("addTask", listID, "task2");
-  // socket.emit("addTask", listID, "task3");
-  // socket.emit("renameList", listID, "NEW NEW NEW LIST");
-  // socket.on("addTask", (taskID, err) => {
-  //   socket.emit("editTask", listID, taskID, "NYYTTTTTT VALUE");
-  //   // socket.emit("deleteTask", taskID);
-  //   // socket.emit("deleteList", listID);
-  //   //socket.emit("deleteTask", taskID);
-  //   // socket.emit("checkTask", listID, taskID);
-  //   // socket.on("checkTask", (taskID, err) => {
-  //   //   console.log(taskID, err);
-  //   //   socket.emit("uncheckTask", listID, taskID);
-  //   // });
-  // });
-  socket.emit("getTasks", listID[0]._id);
-  socket.on("getTasks", (tasks, err) => {
-    console.log(tasks, err);
-  });
-});
-
-// socket.emit("register", "axel", "123123");
-// socket.emit("authenticate", "axel", "12a3");
-// socket.emit("authenticate", "axel", "123123");
-// socket.on("authenticate", (id, err) => {
-//   console.log(id, err);
-// });

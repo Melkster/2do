@@ -21,8 +21,11 @@ export default class LogInScreen extends Component {
       username: "",
       password1: "",
       password2: "",
-      modalVisible: false
+      modalVisible: false,
+      credentialsStatus: ""
     };
+
+    socket.on("register", (_, err) => this._handleRegister(err));
   }
 
   static navigationOptions = {
@@ -40,26 +43,26 @@ export default class LogInScreen extends Component {
         <KeyboardAvoidingView behavior="height" style={styles.container} onPress={Keyboard.dismiss}>
           <TextInput
             value={this.state.username}
-            onChangeText={username => this.setState({ username })}
+            onChangeText={username => this._setStateAndUpdateStatus({ username })}
             placeholder={"Username"}
             style={styles.input}
           />
           <TextInput
             value={this.state.password1}
-            onChangeText={password1 => this.setState({ password1 })}
+            onChangeText={password1 => this._setStateAndUpdateStatus({ password1 })}
             placeholder={"Password"}
             secureTextEntry={true}
             style={styles.input}
           />
           <TextInput
             value={this.state.password2}
-            onChangeText={password2 => this.setState({ password2 })}
+            onChangeText={password2 => this._setStateAndUpdateStatus({ password2 })}
             placeholder={"Please repeat your password"}
             secureTextEntry={true}
             style={styles.input}
           />
 
-          <Text style={styles.errorStatusIndicator}>{this._passwordsMatchStatus()}</Text>
+          <Text style={styles.errorStatusIndicator}>{this._capitalize(this.state.credentialsStatus)}</Text>
 
           <Button title={"Create account"} style={styles.input} onPress={this._confirm} />
 
@@ -74,23 +77,40 @@ export default class LogInScreen extends Component {
     );
   }
 
-  _passwordsMatchStatus = () => {
-    if (this.state.password1 !== this.state.password2 && this.state.password1 && this.state.password2) {
-      return "Paswords don't match";
+  _setStateAndUpdateStatus = state => {
+    this.setState(state, () => {
+      return this._credentialsStatus();
+    });
+  };
+
+  _validateCredentials = (username, password1, password2) => {};
+
+  /**
+   * Sets this.state.credentialsStatus.
+   *
+   * If the two passwords match, it sets this.state.credentialsStatus to
+   * `state`, otherwise it sets it to "Paswords don't match".
+   */
+  _credentialsStatus = status => {
+    if (this.state.password1 && this.state.password2 && this.state.password1 !== this.state.password2) {
+      status = "Passwords don't match";
+    }
+
+    if (status !== this.state.credentialsStatus) {
+      // Check if this.state.credentialsStatus will change to prevent infinite recursive `setState()` calls
+      this.setState({ credentialsStatus: status });
     }
   };
 
   /**
    * Sets the visibility of modal.
    */
-  _setModalVisible(visible) {
+  _setModalVisible = visible => {
     this.setState({ modalVisible: visible });
-  }
+  };
 
   _confirm = () => {
-    this._registerUser(() => {
-      this._setModalVisible(true);
-    });
+    this._registerUser();
   };
 
   /**
@@ -105,18 +125,28 @@ export default class LogInScreen extends Component {
   };
 
   /**
-   * Registers user.
-   *
-   * Expects a response to a `register` event with an `err`. If
-   * there is no `err`, runs `callback()`.
+   * Sends a `register` event if `username` and `password` are defined.
    */
   _registerUser = callback => {
     if (this.state.password1 === this.state.password2) {
       socket.emit("register", this.state.username, this.state.password1);
-      socket.on("register", (_, err) => {
-        if (err) return Alert.alert(failed_error, err);
-        callback();
-      });
     }
+  };
+
+  /**
+   * Registers user.
+   *
+   * If there is no `err`, displays confirmation modal.
+   */
+  _handleRegister = err => {
+    if (err) this._credentialsStatus(err);
+    else this._setModalVisible(true);
+  };
+
+  /**
+   *  Capitalizes the first letter in `string` if `string` is defined.
+   */
+  _capitalize = string => {
+    return string ? string.charAt(0).toUpperCase() + string.substring(1) : string;
   };
 }

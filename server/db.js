@@ -1,5 +1,4 @@
 var objectID = require("mongodb").ObjectID;
-
 module.exports = {
   // Creates a group and inserts it into the database with the given userID
   // Also inserts the groupID in the users groups array

@@ -8,7 +8,9 @@ module.exports = {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
     var groupQuery = { _id: userID };
     try {
-      const result = await database.collection("groups").insertOne(groupToInsert);
+      const result = await database
+        .collection("groups")
+        .insertOne(groupToInsert);
       var groupIDToInsert = { $push: { groups: result.ops[0]._id } };
       await database.collection("users").updateOne(groupQuery, groupIDToInsert);
       return result.ops[0]._id;
@@ -116,7 +118,9 @@ module.exports = {
     };
     var query = { "lists.tasks._id": taskID };
     try {
-      await database.collection("groups").updateOne(query, taskToEdit, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToEdit, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -132,7 +136,9 @@ module.exports = {
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("groups").updateOne(query, taskToCheck, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -148,7 +154,9 @@ module.exports = {
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("groups").updateOne(query, taskToCheck, arrayFilters);
+      await database
+        .collection("groups")
+        .updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -227,11 +235,34 @@ module.exports = {
   getTasks: async function(database, listID) {
     var query = { "lists._id": listID };
     var projection = {
-      projection: { _id: 0, "lists.name": 0, "lists._id": 0, lists: { $elemMatch: { _id: listID } } }
+      projection: {
+        _id: 0,
+        "lists.name": 0,
+        "lists._id": 0,
+        lists: { $elemMatch: { _id: listID } }
+      }
     };
     try {
-      const result = await database.collection("groups").findOne(query, projection);
+      const result = await database
+        .collection("groups")
+        .findOne(query, projection);
       return result.lists[0].tasks;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Returns the ID and name of all the groups the username is in
+  getGroups: async function(database, username) {
+    var user = await this.getUser(database, username);
+    var ids = user.groups;
+    var query = { _id: { $in: ids } };
+    var projection = { projection: { users: 0, lists: 0 } };
+    try {
+      const result = await database
+        .collection("groups")
+        .find(query, projection);
+      return result.toArray();
     } catch (err) {
       throw err;
     }

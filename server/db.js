@@ -26,7 +26,6 @@ module.exports = {
 
   //Inserts a list into the given group ID with given list name
   //Returns the ID of the newly created list
-
   createList: async function(database, groupID, listName) {
     var id = new objectID();
     var listToInsert = {
@@ -236,5 +235,5 @@ module.exports = {
     } catch (err) {
       throw err;
     }
-  }
+  },
 };

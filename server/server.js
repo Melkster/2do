@@ -1,7 +1,3 @@
-// TODO: try catch statements for all the events
-// database functions export
-// rewrite with real database functions
-
 const app = require("express")();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
@@ -18,7 +14,7 @@ var dbfunc = require("./db");
 //Connect to databse
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
-  //connection event i recieved every time a new user connects to server
+  //connection event recieved every time a new user connects to server
   io.on("connection", socket => {
     console.log("A user connected");
     // Event that gets called when user navigates to a list, this joines a socket room
@@ -73,9 +69,11 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
-    socket.on("createGroup", async (userID, groupName) => {
+    //TODO maybe return something else, getGroups???
+    socket.on("createGroup", async (userID, username, groupName) => {
       try {
         var groupID = await dbfunc.createGroup(database, new objectID(userID), groupName);
+        //var groups = await userID.getUser;
         io.emit("createGroup", groupID, null);
       } catch (e) {
         console.log(e);
@@ -211,7 +209,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
           } else {
             io.emit("authenticate", null, "Authentication failed");
           }
-
         } catch (e) {
           console.log(e);
         }

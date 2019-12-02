@@ -4,7 +4,7 @@
   "description": "Collaborative todo list server",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha 'tests/*'",
     "start": "nodemon server.js"
   },
   "license": "ISC",
@@ -15,6 +15,8 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.2",
     "nodemon": "^2.0.0"
   }
 }

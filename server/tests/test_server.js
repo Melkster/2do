@@ -5,6 +5,9 @@ var options = {
   transports: ["websocket"],
   "force new connection": true
 };
+
+var USERID;
+var listID;
 describe("Socket event tests for server", async () => {
   it("Test register and authentication", done => {
     var client1 = io.connect(socketUrl);
@@ -13,6 +16,7 @@ describe("Socket event tests for server", async () => {
       client1.emit("register", "michael", "123123");
       client1.on("register", (userID, err) => {
         expect(userID).to.not.equal(null);
+        USERID = userID;
       });
 
       client1.emit("authenticate", "michael", "aaaaaa");
@@ -40,6 +44,8 @@ describe("Socket event tests for server", async () => {
     var client = io.connect(socketUrl);
 
     client.on("connect", () => {});
+    client.emit("createGroup", USERID);
+    client.on("createGroup", ((groupID, err) = {}));
     done();
   });
 });

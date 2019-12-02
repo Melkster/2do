@@ -81,7 +81,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     // Creates a new group given a name.
-    // Returns all name and ID for all gruops that a user belongs to
+    // Returns all name and ID for all groups that a user belongs to
     socket.on("createGroup", async (userID, groupName) => {
       try {
         var groupID = await dbfunc.createGroup(

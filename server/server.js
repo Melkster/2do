@@ -59,9 +59,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Adds tasks to a list, returns the list of all tasks after the task is added
     socket.on("addTask", async (listID, value) => {
       try {
-        var objlistID = new objectID(listID);
-        var taskID = await dbfunc.addTask(database, objlistID, value);
-        var tasks = await dbfunc.getTasks(database, objlistID);
+        var objListID = new objectID(listID);
+        var taskID = await dbfunc.addTask(database, objListID, value);
+        var tasks = await dbfunc.getTasks(database, objListID);
         //.in(listID)
         io.emit("addTask", tasks, null);
       } catch (e) {
@@ -74,12 +74,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // in the group after the new list id added
     socket.on("createList", async (groupID, value) => {
       try {
-        var listID = await dbfunc.createList(
-          database,
-          new objectID(groupID),
-          value
-        );
-        var lists = await dbfunc.getLists(database, new objectID(groupID));
+        var objgroupID = new objectID(groupID);
+        var listID = await dbfunc.createList(database, objgroupID, value);
+        var lists = await dbfunc.getLists(database, objgroupID);
         io.emit("createList", lists, null);
       } catch (e) {
         io.emit("createList", null, "could not create list");
@@ -107,12 +104,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns the list of all tasks in the list after the check is made.
     socket.on("checkTask", async (listID, taskID) => {
       try {
-        await dbfunc.checkTask(
-          database,
-          new objectID(listID),
-          new objectID(taskID)
-        );
-        var tasks = await dbfunc.getTasks(database, new objectID(listID));
+        var objListID = new objectID(listID);
+        await dbfunc.checkTask(database, objListID, new objectID(taskID));
+        var tasks = await dbfunc.getTasks(database, objListID);
         //.in(listID)
         io.emit("checkTask", tasks, null);
       } catch (e) {
@@ -145,7 +139,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.deleteTask(database, new objectID(taskID));
         //.in(listID)
-        var tasks = await dbfunc.getTasks(database, new obejctID(listID));
+        var tasks = await dbfunc.getTasks(database, new objectID(listID));
         io.emit("deleteTask", tasks, null);
       } catch (e) {
         io.emit("deleteTask", null, "Could not delete task");
@@ -182,13 +176,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // returns the list of all tasks in the list after the edit is made.
     socket.on("editTask", async (listID, taskID, value) => {
       try {
-        await dbfunc.editTask(
-          database,
-          new objectID(listID),
-          new objectID(taskID),
-          value
-        );
-        var tasks = await dbfunc.getTasks(database, new objectID(listID));
+        var objListID = new objectID(listID);
+        await dbfunc.editTask(database, objListID, new objectID(taskID), value);
+        var tasks = await dbfunc.getTasks(database, objListID);
         //.in(listID)
         io.emit("editTask", tasks, null);
       } catch (e) {
@@ -199,7 +189,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     // Renames a list given a listID and value
     // Returns the list of lists given a groupID after the edit is made
-    socket.on("renameList", async (listID, value) => {
+    socket.on("renameList", async (groupID, listID, value) => {
       try {
         await dbfunc.renameList(database, new objectID(listID), value);
         var lists = await dbfunc.getLists(database, new objectID(groupID));

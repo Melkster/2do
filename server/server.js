@@ -1,7 +1,3 @@
-// TODO: try catch statements for all the events
-// database functions export
-// rewrite with real database functions
-
 const app = require("express")();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
@@ -86,15 +82,14 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     // Creates a new group given a name.
     // Returns all name and ID for all gruops that a user belongs to
-    socket.on("createGroup", async (userID, username, groupName) => {
+    socket.on("createGroup", async (userID, groupName) => {
       try {
-        console.log(userID, username, groupName);
         var groupID = await dbfunc.createGroup(
           database,
           new objectID(userID),
           groupName
         );
-        var groups = await dbfunc.getGroups(database, username);
+        var groups = await dbfunc.getGroups(database, userID);
         console.log(groups);
         io.emit("createGroup", groups, null);
       } catch (e) {
@@ -164,11 +159,11 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     // Deletes a group given the groupID
-    // Returns the list of groups for the user given username
-    socket.on("deleteGroup", async (groupID, username) => {
+    // Returns the list of groups for the user given userID
+    socket.on("deleteGroup", async (groupID, userID) => {
       try {
         await dbfunc.deleteGroup(database, new objectID(groupID));
-        var groups = await dbfunc.getGroups(database, username);
+        var groups = await dbfunc.getGroups(database, userID);
         io.emit("deleteGroup", groups, null);
       } catch (e) {
         io.emit("deleteGroup", null, "Could not delete Group");
@@ -206,10 +201,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
 
     // Renames group given a groupID and a new value
     // TODO return the list of groups in a user after the rename is made.
-    socket.on("renameGroup", async (groupID, username, value) => {
+    socket.on("renameGroup", async (groupID, userID, value) => {
       try {
         await dbfunc.renameGroup(database, new objectID(groupID), value);
-        var groups = await dbfunc.getGroups(database, username);
+        var groups = await dbfunc.getGroups(database, userID);
         io.emit("renameGroup", groups, null);
       } catch (e) {
         io.emit("renameGroup", null, "Could not rename group");
@@ -338,9 +333,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     // Returns list of groups that a user belongs to, given username
-    socket.on("getGroups", async username => {
+    socket.on("getGroups", async userID => {
       try {
-        var groups = await dbfunc.getGroups(database, username);
+        var groups = await dbfunc.getGroups(database, userID);
         io.emit("getGroups", groups, null);
       } catch (e) {
         console.log(e);
@@ -383,6 +378,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   db.close();
 });
 
-http.listen(3000, "0.0.0.0", () => {
+sdasdasdadsadsadsadshttp.listen(3000, "0.0.0.0", () => {
   console.log("Listening on localhost: 3000");
 });

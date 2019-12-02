@@ -31,13 +31,17 @@ socket.on("register", (id, err) => {
         socket.emit("addTask", lists[0]._id, "buy milk");
         socket.emit("addTask", lists[0]._id, "buy something");
         socket.on("addTask", (tasks, err) => {
-          console.log(tasks, err);
+          //console.log(tasks, err);
           socket.emit("checkTask", lists[0]._id, tasks[0]._id);
         });
         socket.on("checkTask", (tasks, err) => {
-          console.log(tasks, err);
+          //console.log(tasks, err);
         });
       });
+    });
+    socket.emit("getGroups", username);
+    socket.on("getGroups", (groups, err) => {
+      console.log(groups);
     });
   });
 });

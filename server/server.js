@@ -328,13 +328,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       console.log("A user disconnected");
     });
 
-    // Used only for debug purposes
-    // TODO: remove later
-    socket.on("chatMessage", (msg, group) => {
-      io.in(group).emit("message", msg);
-      console.log("Message: ", msg);
-    });
-
     // Some functions for authentication and password hash management
     async function hash_password(password) {
       const hash3 = await bcrypt.hashSync(password, salt);

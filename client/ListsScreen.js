@@ -14,14 +14,12 @@ export default class ListsScreen extends Component {
 
     // get the lists for the choosen group from DB, now from data.json
     groupID = this.props.navigation.getParam("id");
-    groupname = "List" + groupID;
-    lists = data[groupname];
+    //groupname = "List" + groupID;
+    //lists = data[groupname];
+    socket.emit("getLists", groupID);
 
-    // check if the group exist (TODO: fix this code when connected to DB)
-    if (!lists) {
-      lists = [];
-    }
-    this.state = { lists: lists };
+    // empty lists-state before we get the lists from server
+    this.state = { lists: [], userid: this.props.userid };
   }
 
   // set the title for the page (from props)
@@ -35,6 +33,13 @@ export default class ListsScreen extends Component {
 
   componentDidMount() {
     this.props.navigation.setParams({ addButton: this.createNewList });
+    // TODO: use "getGroups" instead when implemented
+    socket.on("getLists", (lists, err) => this.handleGetLists(lists, err));
+    socket.on("createList", (lists, err) => this.handleCreateLists(lists, err));
+  }
+
+  componentWillUnmount() {
+    socket.off();
   }
 
   render() {
@@ -119,12 +124,25 @@ export default class ListsScreen extends Component {
     );
   }
 
-  createNewList = () => {
-    //TODO: get a new list _from DB_ with empty task object.
-    newList = { id: -1, name: "" };
+  handleCreateLists = (lists, err) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    this.setState({ lists: lists });
+  };
 
-    this.state.lists.push(newList);
-    this.setState({ lists: this.state.lists });
+  handleGetLists = (lists, err) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    this.setState({ lists: lists });
+  };
+
+  createNewList = () => {
+    console.log("created new list");
+    socket.emit("createList", this.state.userid, "list");
   };
 
   deleteList = item => {

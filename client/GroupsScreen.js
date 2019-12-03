@@ -25,8 +25,10 @@ export default class GroupsScreen extends Component {
     super(props);
 
     // get the groups for the user _from DB_
-    var groups = data.Groups;
-    this.state = { groups: groups, text: "test" };
+    var groups = [];
+    this.state = { username: "1", userid: "", groups: groups, text: "test" };
+    socket.emit("register", "1", "1");
+    socket.emit("getUser", this.state.username);
   }
 
   static navigationOptions = ({ navigation }) => {
@@ -44,6 +46,13 @@ export default class GroupsScreen extends Component {
 
   componentDidMount() {
     this.props.navigation.setParams({ addButton: this.createNewGroup });
+    // TODO: use "getGroups" instead when implemented
+    socket.on("getUser", (user, err) => this.handleGetUser(user, err));
+    socket.on("createGroup", (groupID, err) => this.handleCreateGroup(groupID, err));
+  }
+
+  componentWillUnmount() {
+    socket.off();
   }
 
   render() {
@@ -63,13 +72,14 @@ export default class GroupsScreen extends Component {
                 <TouchableOpacity
                   style={styles.listItem}
                   onPress={() => {
-                    this.props.navigation.navigate("Lists", { id: item.id, title: item.name, addButton: null });
+                    // TODO: se till att rätt id skickas
+                    this.props.navigation.navigate("Lists", { id: item, userid: this.state.userid, addButton: null });
                   }}
                 >
                   <View style={styles.checkbox}>
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
-                  <Text style={styles.listText}>{item.name}</Text>
+                  <Text style={styles.listText}>{item}</Text>
                 </TouchableOpacity>
               );
             } else {
@@ -95,16 +105,28 @@ export default class GroupsScreen extends Component {
     );
   }
 
-  createNewGroup = () => {
-    //TODO: get a new group _from DB_
-    newGroup = { id: 0, name: "fake-group", users: [] };
-    this.state.groups.push(newGroup);
-    this.setState({ groups: this.state.groups });
+  handleGetUser = (user, err) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    this.setState({ groups: user.groups, userid: user.id });
   };
 
-  //TODO: remove if not used?
-  enterList = list => {
-    this.props.navigation.navigate("Lists", { id: list.id, title: list.name, addButton: null });
+  createNewGroup = () => {
+    console.log("createar ny grupp");
+    socket.emit("createGroup", this.state.userid, "group");
+  };
+
+  handleCreateGroup = (groupID, err) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    // TODO: make sure the right thing is added to state (not just ID)
+    console.log("pushar nytt id");
+    this.state.groups.push(groupID);
+    this.setState({ groups: this.state.groups });
   };
 
   _signOutAsync = async () => {

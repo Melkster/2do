@@ -5,44 +5,46 @@ var readline = require("readline-sync");
 var objectID = require("mongodb").ObjectID;
 
 var username = "michael";
+var fakeusername = "axel";
 var password = "123123";
+var fakepassword = "wrong";
 var user;
 var userid;
 var groupid;
 var listid;
 
-// Add a connect listener
+//Add a connect listener
 socket.on("connect", socket => {
   console.log("Connected!");
 });
 
 socket.emit("register", username, password);
 socket.on("register", (id, err) => {
-    userid = id;
-    console.log(id, "aaaa", userid);
+  userid = id;
+  console.log(id, "aaaa", userid);
 
   socket.emit("authenticate", username, password);
   socket.on("authenticate", (res, err) => {
-      console.log(userid);
+    console.log(res, err);
 
-    socket.emit("createGroup", userid, "group1");
-      socket.on("createGroup", (groups, err) => {
-      socket.emit("createList", groups[0]._id, "list1");
-      socket.on("createList", (lists, err) => {
-        socket.emit("addTask", lists[0]._id, "buy milk");
-        socket.emit("addTask", lists[0]._id, "buy something");
-        socket.on("addTask", (tasks, err) => {
-          //console.log(tasks, err);
-          socket.emit("checkTask", lists[0]._id, tasks[0]._id);
-        });
-        socket.on("checkTask", (tasks, err) => {
-          //console.log(tasks, err);
-        });
-      });
-    });
-    socket.emit("getGroups", userid);
-    socket.on("getGroups", (groups, err) => {
-      console.log(groups);
-    });
+    //     socket.emit("createGroup", userid, "group1");
+    //       socket.on("createGroup", (groups, err) => {
+    //       socket.emit("createList", groups[0]._id, "list1");
+    //       socket.on("createList", (lists, err) => {
+    //         socket.emit("addTask", lists[0]._id, "buy milk");
+    //         socket.emit("addTask", lists[0]._id, "buy something");
+    //         socket.on("addTask", (tasks, err) => {
+    //           //console.log(tasks, err);
+    //           socket.emit("checkTask", lists[0]._id, tasks[0]._id);
+    //         });
+    //         socket.on("checkTask", (tasks, err) => {
+    //           //console.log(tasks, err);
+    //         });
+    //       });
+    //     });
+    //     socket.emit("getGroups", userid);
+    //     socket.on("getGroups", (groups, err) => {
+    //       console.log(groups);
+    //     });
   });
 });

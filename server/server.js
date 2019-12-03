@@ -237,13 +237,16 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         io.emit("authenticate", null, "missing password");
       } else {
         try {
-          var res = await authenticate(username, password);
           var user = await dbfunc.getUser(database, username);
-          if (res) {
-            delete user.passwordHash;
-            io.emit("authenticate", user, null);
+          if (user) {
+            if (await authenticate(username, password)) {
+              delete user.passwordHash;
+              io.emit("authenticate", user, null);
+            } else {
+              io.emit("authenticate", null, "incorrect password");
+            }
           } else {
-            io.emit("authenticate", null, "Authentication failed");
+            io.emit("authenticate", null, "User does not exist");
           }
         } catch (e) {
           console.log(e);

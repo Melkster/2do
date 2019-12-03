@@ -6,56 +6,67 @@ module.exports = {
   createGroup: async function(database, userID, groupName) {
     var groupToInsert = { name: groupName, users: [userID], lists: [] };
     var userQuery = { _id: userID };
+    var groupID, userResult;
     try {
-      const result = await database
-        .collection("groups")
-        .insertOne(groupToInsert);
+      const result = await database.collection("groups").insertOne(groupToInsert);
       if (!result) {
         throw "Couldn't create a new group";
       }
-      var groupIDToInsert = { $push: { groups: result.ops[0]._id } };
-      const userResult = await database
-        .collection("users")
-        .updateOne(userQuery, groupIDToInsert);
-      if (userResult.result.nModified == "0") {
-        throw "Couldn't insert the groupID in the user";
-      }
-      return result.ops[0]._id;
+      groupID = result.ops[0]._id;
+      var groupIDToInsert = { $push: { groups: groupID } };
+      userResult = await database.collection("users").updateOne(userQuery, groupIDToInsert);
     } catch (err) {
-      throw err;
+      throw "Something went wrong in db";
     }
+    if (userResult.result.nModified == "0") {
+      try {
+        await this.deleteGroup(database, groupID);
+      } catch (err) {
+        throw err;
+      }
+      throw "Couldn't insert the groupID in the user, deleting new group";
+    }
+    return groupID;
   },
 
   //Inserts a list into the given group ID with given list name
   //Returns the ID of the newly created list
   createList: async function(database, groupID, listName) {
     var id = new objectID();
+    var result;
     var listToInsert = {
       $push: { lists: { _id: id, name: listName, tasks: [] } }
     };
     var query = { _id: groupID };
     try {
-      await database.collection("groups").updateOne(query, listToInsert);
-      return id;
+      result = await database.collection("groups").updateOne(query, listToInsert);
     } catch (err) {
-      throw err;
+      throw "Something went wrong in db";
     }
+    if (result.result.nModified == "0") {
+      throw "Couldn't create a new list";
+    }
+    return id;
   },
 
   // Adds a task to the provided listID with the provided text
   // Returns the ID of the newly created task
   addTask: async function(database, listID, value) {
     var id = new objectID();
+    var result;
     var taskToInsert = {
       $push: { "lists.$.tasks": { _id: id, value: value, checked: false } }
     };
     var query = { "lists._id": listID };
     try {
-      await database.collection("groups").updateOne(query, taskToInsert);
-      return id;
+      result = await database.collection("groups").updateOne(query, taskToInsert);
     } catch (err) {
-      throw err;
+      throw "Something went wrong in db";
     }
+    if (result.result.nModified == "0") {
+      throw "Couldn't create a new list";
+    }
+    return id;
   },
 
   // Deletes a group with the given groupID
@@ -98,9 +109,7 @@ module.exports = {
     var newName = { $set: { name: newName } };
     var query = { _id: groupID };
     try {
-      const result = await database
-        .collection("groups")
-        .updateOne(query, newName);
+      const result = await database.collection("groups").updateOne(query, newName);
     } catch (err) {
       throw err;
     }
@@ -127,9 +136,7 @@ module.exports = {
     };
     var query = { "lists.tasks._id": taskID };
     try {
-      await database
-        .collection("groups")
-        .updateOne(query, taskToEdit, arrayFilters);
+      await database.collection("groups").updateOne(query, taskToEdit, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -145,9 +152,7 @@ module.exports = {
     };
     var query = { "lists._id": listID };
     try {
-      await database
-        .collection("groups")
-        .updateOne(query, taskToCheck, arrayFilters);
+      await database.collection("groups").updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -163,9 +168,7 @@ module.exports = {
     };
     var query = { "lists._id": listID };
     try {
-      await database
-        .collection("groups")
-        .updateOne(query, taskToCheck, arrayFilters);
+      await database.collection("groups").updateOne(query, taskToCheck, arrayFilters);
     } catch (err) {
       throw err;
     }
@@ -228,7 +231,7 @@ module.exports = {
       const result = await database.collection("users").insertOne(userToInsert);
       return result.ops[0]._id;
     } catch (err) {
-      throw "Already existing user";
+      throw "The username is already taken";
     }
   },
 
@@ -255,9 +258,7 @@ module.exports = {
       }
     };
     try {
-      const result = await database
-        .collection("groups")
-        .findOne(query, projection);
+      const result = await database.collection("groups").findOne(query, projection);
       return result.lists[0].tasks;
     } catch (err) {
       throw err;
@@ -275,9 +276,7 @@ module.exports = {
     var query = { _id: { $in: ids } };
     var projection = { projection: { users: 0, lists: 0 } };
     try {
-      const result = await database
-        .collection("groups")
-        .find(query, projection);
+      const result = await database.collection("groups").find(query, projection);
       return result.toArray();
     } catch (err) {
       throw err;

@@ -98,17 +98,17 @@ describe("db tests", () => {
     expect(createdGroup).toEqual(mockGroup);
 
     // Tests: inviteUser, getUser
-    await dbfunc.inviteUser(db, groupID, userID);
+    await dbfunc.inviteUser(db, groupID, username);
     createdGroup = await groups.findOne({ _id: groupID });
     mockGroup.users.push(userID);
     expect(createdGroup).toEqual(mockGroup);
     registeredUser = await dbfunc.getUser(db, username);
     mockUser.groups.push(groupID);
     expect(registeredUser).toEqual(mockUser);
-    
+
     // Tests: getGroups
     var userGroups = await dbfunc.getGroups(db, userID);
-    expect(userGroups).toEqual([ { _id: groupID, name: groupName} ]);
+    expect(userGroups).toEqual([{ _id: groupID, name: groupName }]);
 
     // Tests: getTasks
     var tasks = await dbfunc.getTasks(db, listID);
@@ -142,7 +142,7 @@ describe("db tests", () => {
     expect(createdGroup).toEqual(mockGroup);
 
     // Tests: deleteGroup
-    await dbfunc.inviteUser(db, groupID, userID);
+    await dbfunc.inviteUser(db, groupID, username);
     await dbfunc.deleteGroup(db, groupID);
     createdGroup = await groups.findOne({ _id: groupID });
     expect(createdGroup).toEqual(null);

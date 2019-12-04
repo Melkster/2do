@@ -14,6 +14,8 @@ var dbfunc = require("./db");
 //Connect to databse
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
+  // Database setup: Creates an index on username and makes it unique
+  database.collection("users").createIndex({username: 1}, {unique: true});
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
     console.log("A user connected");
@@ -210,17 +212,13 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       } else if (!password) {
         io.emit("register", null, "missing password");
       } else {
-        if (!(await dbfunc.getUser(database, username))) {
-          try {
-            var passwordHash = await hash_password(password);
-            var userID = await dbfunc.registerUser(database, username, passwordHash);
-            io.emit("register", userID, null);
-          } catch (e) {
-            io.emit("register", null, "could not register user");
-            console.log(e);
-          }
-        } else {
-          io.emit("register", null, "a user with that name already exist");
+        try {
+          var passwordHash = await hash_password(password);
+          var userID = await dbfunc.registerUser(database, username, passwordHash);
+          io.emit("register", userID, null);
+        } catch (e) {
+          io.emit("register", null, "could not register user");
+          console.log(e);
         }
       }
     });
@@ -255,13 +253,13 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     // Invites a new user to a group given the userID of the user and the groupID of the group
-    socket.on("inviteUser", async (groupID, userID) => {
+    socket.on("inviteUser", async (groupID, username) => {
       try {
-        await dbfunc.inviteUser(database, new objectID(groupID), new objectID(userID));
-        io.emit("inviteUser", true, null);
+        await dbfunc.inviteUser(database, new objectID(groupID), username);
+        io.emit("inviteUser", null);
       } catch (e) {
         console.log(e);
-        io.emit("inviteUser", null, "Could not invite user");
+        io.emit("inviteUser", "Could not invite user");
       }
     });
 

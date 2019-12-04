@@ -316,7 +316,7 @@ module.exports = {
     try {
       result = await database.collection("users").insertOne(userToInsert);
     } catch (err) {
-      if (err.code = "11000") {
+      if ((err.code = "11000")) {
         throw "The username is already taken";
       }
       console.log(err);
@@ -339,7 +339,7 @@ module.exports = {
       throw "Something went wrong in db";
     }
     if (!result) {
-      console.log("asd")
+      console.log("asd");
       throw "Couldn't find user";
     }
     return result;
@@ -364,7 +364,7 @@ module.exports = {
       throw "Something went wrong in db";
     }
     if (!result) {
-      throw "Couldn't find list with tasks"
+      throw "Couldn't find list with tasks";
     }
     return result.lists[0].tasks;
   },

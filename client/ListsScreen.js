@@ -12,14 +12,11 @@ export default class ListsScreen extends Component {
   constructor(props) {
     super(props);
 
-    // get the lists for the choosen group from DB, now from data.json
     groupID = this.props.navigation.getParam("id");
-    //groupname = "List" + groupID;
-    //lists = data[groupname];
-    socket.emit("getLists", groupID);
-
     // empty lists-state before we get the lists from server
-    this.state = { lists: [], userid: this.props.userid };
+    this.state = { lists: [], groupID: groupID, userID: this.props.userID };
+    // get the lists for the choosen group from DB
+    socket.emit("getLists", groupID);
   }
 
   // set the title for the page (from props)
@@ -32,14 +29,23 @@ export default class ListsScreen extends Component {
   };
 
   componentDidMount() {
+    console.log("mounted ListsScreen");
     this.props.navigation.setParams({ addButton: this.createNewList });
-    // TODO: use "getGroups" instead when implemented
-    socket.on("getLists", (lists, err) => this.handleGetLists(lists, err));
-    socket.on("createList", (lists, err) => this.handleCreateLists(lists, err));
+    socket.on("getLists", (lists, err) => this.handleLists(lists, err));
+
+    this.didFocus = this.props.navigation.addListener("didFocus", () => {
+      // TODO: use "getGroups" instead when implemented
+      //socket.on("register", (user, err) => this.handleRegister(user, err));
+      socket.on("createList", (lists, err) => this.handleLists(lists, err));
+      socket.on("renameList", (lists, err) => this.handleLists(lists, err));
+      socket.on("deleteList", (lists, err) => this.handleLists(lists, err));
+    });
   }
 
   componentWillUnmount() {
+    console.log("unmount");
     socket.off();
+    this.didFocus.remove();
   }
 
   render() {
@@ -74,7 +80,9 @@ export default class ListsScreen extends Component {
                       text: "Delete",
                       backgroundColor: "red",
                       onPress: () => {
-                        this.deleteList(item);
+                        groupID = this.state.groupID;
+                        listID = item._id;
+                        socket.emit("deleteList", listID, groupID);
                       }
                     }
                   ]}
@@ -84,7 +92,7 @@ export default class ListsScreen extends Component {
                   <TouchableOpacity
                     style={styles.listItem}
                     onPress={() => {
-                      this.props.navigation.navigate("Tasks", { id: item.id, parentID: groupID, addButton: null });
+                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name, addButton: null });
                     }}
                   >
                     <View style={styles.checkbox}>
@@ -99,7 +107,10 @@ export default class ListsScreen extends Component {
                       style={styles.uncheckedTask}
                       // TODO: onBlur -> update task name in DB
                       onBlur={() => {
-                        console.log("update list name");
+                        groupID = this.state.groupID;
+                        listID = item._id;
+                        newName = this.state.lists[index].name;
+                        socket.emit("renameList", groupID, listID, newName);
                       }}
                     />
                   </TouchableOpacity>
@@ -124,17 +135,8 @@ export default class ListsScreen extends Component {
     );
   }
 
-  handleCreateLists = (lists, err) => {
-    console.log("handleCreateLists");
-    if (err) {
-      console.log(err);
-      return;
-    }
-    this.setState({ lists: lists });
-  };
-
-  handleGetLists = (lists, err) => {
-    console.log("handleGetList");
+  handleLists = (lists, err) => {
+    console.log("got new lists");
     if (err) {
       console.log(err);
       return;
@@ -143,8 +145,8 @@ export default class ListsScreen extends Component {
   };
 
   createNewList = () => {
-    console.log("created new list");
-    socket.emit("createList", this.state.userid, "list");
+    console.log("tried to create new list");
+    socket.emit("createList", this.state.groupID, "");
   };
 
   deleteList = item => {

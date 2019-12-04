@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   TouchableHighlight
 } from "react-native";
+import Swipeout from "react-native-swipeout";
 
 import groupIcon from "./assets/groupIcon.png";
 import newGroupIcon from "./assets/newGroupIcon.png";
@@ -26,9 +27,10 @@ export default class GroupsScreen extends Component {
 
     // get the groups for the user _from DB_
     var groups = [];
-    this.state = { username: "1", userid: "", groups: groups, text: "test" };
-    socket.emit("register", "1", "1");
-    socket.emit("getUser", this.state.username);
+    this.state = { userID: "", groups: groups, text: "test" };
+    //socket.emit("register", "1", "1");
+    socket.emit("getUser", "1");
+    //socket.emit("getGroups", this.state.userid);
   }
 
   static navigationOptions = ({ navigation }) => {
@@ -46,13 +48,19 @@ export default class GroupsScreen extends Component {
 
   componentDidMount() {
     this.props.navigation.setParams({ addButton: this.createNewGroup });
-    // TODO: use "getGroups" instead when implemented
-    socket.on("getUser", (user, err) => this.handleGetUser(user, err));
-    socket.on("createGroup", (groupID, err) => this.handleCreateGroup(groupID, err));
+    this.didFocus = this.props.navigation.addListener("didFocus", () => {
+      // TODO: use "getGroups" instead when implemented
+      //socket.on("register", (user, err) => this.handleRegister(user, err));
+      socket.on("getUser", (user, err) => this.handleGetUser(user, err));
+      socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
+      socket.on("createGroup", (groups, err) => this.handleGroups(groups, err));
+      socket.on("deleteGroup", (groups, err) => this.handleGroups(groups, err));
+    });
   }
 
   componentWillUnmount() {
     socket.off();
+    this.didFocus.remove();
   }
 
   render() {
@@ -69,18 +77,39 @@ export default class GroupsScreen extends Component {
             if (section.id == 0) {
               // this is the section for all lists
               return (
-                <TouchableOpacity
-                  style={styles.listItem}
-                  onPress={() => {
-                    // TODO: se till att rätt id skickas
-                    this.props.navigation.navigate("Lists", { id: item, userid: this.state.userid, addButton: null });
-                  }}
+                <Swipeout
+                  right={[
+                    {
+                      text: "Delete",
+                      backgroundColor: "red",
+                      onPress: () => {
+                        groupID = item._id;
+                        userID = this.state.userID;
+                        socket.emit("deleteGroup", groupID, userID);
+                      }
+                    }
+                  ]}
+                  autoClose={true}
+                  backgroundColor="#F5F5F5"
                 >
-                  <View style={styles.checkbox}>
-                    <Image source={section.icon} style={styles.listImage} />
-                  </View>
-                  <Text style={styles.listText}>{item}</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.listItem}
+                    onPress={() => {
+                      // TODO: se till att rätt id skickas
+                      this.props.navigation.navigate("Lists", {
+                        id: item._id,
+                        title: item.name,
+                        userID: this.state.userID,
+                        addButton: null
+                      });
+                    }}
+                  >
+                    <View style={styles.checkbox}>
+                      <Image source={section.icon} style={styles.listImage} />
+                    </View>
+                    <Text style={styles.listText}>{item.name}</Text>
+                  </TouchableOpacity>
+                </Swipeout>
               );
             } else {
               // this is the section of the "add a new list" item
@@ -104,29 +133,38 @@ export default class GroupsScreen extends Component {
       </View>
     );
   }
+  handleError = err => {
+    console.log(err);
+  };
+
+  handleRegister = (userID, err) => {
+    if (err) {
+      handleError(err);
+      return;
+    }
+  };
 
   handleGetUser = (user, err) => {
     if (err) {
-      console.log(err);
+      handleError(err);
       return;
     }
-    this.setState({ groups: user.groups, userid: user.id });
+    //console.log("user id: " + user._id);
+    this.setState({ userID: user._id });
+    socket.emit("getGroups", this.state.userID);
+  };
+
+  handleGroups = (groups, err) => {
+    if (err) {
+      handleError(err);
+      return;
+    }
+    //console.log(groups);
+    this.setState({ groups: groups });
   };
 
   createNewGroup = () => {
-    console.log("createar ny grupp");
-    socket.emit("createGroup", this.state.userid, "group");
-  };
-
-  handleCreateGroup = (groupID, err) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    // TODO: make sure the right thing is added to state (not just ID)
-    console.log("pushar nytt id");
-    this.state.groups.push(groupID);
-    this.setState({ groups: this.state.groups });
+    socket.emit("createGroup", this.state.userID, "groupName");
   };
 
   _signOutAsync = async () => {

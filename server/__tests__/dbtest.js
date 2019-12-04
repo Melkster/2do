@@ -105,6 +105,10 @@ describe("db tests", () => {
     registeredUser = await dbfunc.getUser(db, username);
     mockUser.groups.push(groupID);
     expect(registeredUser).toEqual(mockUser);
+    
+    // Tests: getGroups
+    var userGroups = await dbfunc.getGroups(db, userID);
+    expect(userGroups).toEqual([ { _id: groupID, name: groupName} ]);
 
     // Tests: getTasks
     var tasks = await dbfunc.getTasks(db, listID);

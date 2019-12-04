@@ -31,6 +31,18 @@ export default class LogInScreen extends Component {
     title: "2Do log in"
   };
 
+  componentDidMount() {
+    this.didFocusSubscription = this.props.navigation.addListener("didFocus", () => {
+      // `didFocus` is necessary because the `authenticate` listeners dissappears every time focus is lost
+      socket.on("authenticate", (user, err) => this._handleAuthenticate(user, err));
+    });
+  }
+
+  componentWillUnmount() {
+    socket.off("authenticate"); // Remove socket listeners on unmount
+    this.didFocusSubscription.remove();
+  }
+
   render() {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -68,26 +80,29 @@ export default class LogInScreen extends Component {
   }
 
   /**
-   * Logs in user and fetches all groups.
-   *
-   * Expects a response to an `authenticate` event with a `userID` and `err`. If
-   * there is no `err`, expects a response from a `getGroups` event
-   * containing... TODO
+   * Sends an `authenticate` event if `username` and `password` are defined.
    */
   _logInAsync = (username, password) => {
-    if (!username || !password) return Alert.alert(failed_error, "Please enter your username and password");
+    if (!username || !password) {
+      Alert.alert(failed_error, "Please enter your username and password");
+    } else {
+      socket.emit("authenticate", username, password);
+    }
+  };
 
-    socket.emit("authenticate", username, password);
-    socket.on("authenticate", (userID, err) => {
-      if (err) return Alert.alert(failed_error, err);
-
-      socket.emit("getGroups", userID);
-      socket.on("getGroups", (userID, err) => {
-        if (err) return Alert.alert(failed_error, err);
-        AsyncStorage.setItem("userToken", String(userID));
-        this.props.navigation.navigate("App", { userID });
-      });
-    });
+  /**
+   * Handles the `authenticate` event by logging in the user.
+   *
+   * Expects a `user` object and an `err`. If there is no `err`, this expects
+   * `user` to be an object containing in `_id`, `name` and a list `group`
+   * containing the id's of all groups that the user is a member of.
+   */
+  _handleAuthenticate = (user, err) => {
+    if (err) Alert.alert(failed_error, err);
+    else {
+      AsyncStorage.setItem("userToken", String(user._id));
+      this.props.navigation.navigate("App", { user });
+    }
   };
 
   /**

@@ -125,6 +125,7 @@ export default class ListsScreen extends Component {
   }
 
   handleCreateLists = (lists, err) => {
+    console.log("handleCreateLists");
     if (err) {
       console.log(err);
       return;
@@ -133,6 +134,7 @@ export default class ListsScreen extends Component {
   };
 
   handleGetLists = (lists, err) => {
+    console.log("handleGetList");
     if (err) {
       console.log(err);
       return;

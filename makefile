@@ -9,12 +9,15 @@ run_server:
 	make run_db & $(SERVER) npm start
 
 run_db:
-	$(SERVER) mongod --dbpath=data & $(SERVER) mongo --eval "db.users.createIndex({username: 1}, {unique: true})"
+	$(SERVER) mongod --dbpath=data
 
 run_client:
 	$(CLIENT) npm start
 
+clean_db:
+	$(SERVER) rm -rf data/
+	$(SERVER) mkdir data/
+
 clean:
 	$(SERVER) rm -rf node_modules/
-	$(SERVER) rm -rf data/
 	$(CLIENT) rm -rf node_modules/

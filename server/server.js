@@ -15,7 +15,7 @@ var dbfunc = require("./db");
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
   // Database setup: Creates an index on username and makes it unique
-  database.collection("users").createIndex({username: 1}, {unique: true});
+  database.collection("users").createIndex({name: 1}, {unique: true});
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
     console.log("A user connected");

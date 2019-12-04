@@ -255,13 +255,13 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     });
 
     // Invites a new user to a group given the userID of the user and the groupID of the group
-    socket.on("inviteUser", async (groupID, userID) => {
+    socket.on("inviteUser", async (groupID, username) => {
       try {
-        await dbfunc.inviteUser(database, new objectID(groupID), new objectID(userID));
-        io.emit("inviteUser", true, null);
+        await dbfunc.inviteUser(database, new objectID(groupID), username);
+        io.emit("inviteUser", null);
       } catch (e) {
         console.log(e);
-        io.emit("inviteUser", null, "Could not invite user");
+        io.emit("inviteUser", "Could not invite user");
       }
     });
 

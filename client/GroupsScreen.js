@@ -155,14 +155,14 @@ export default class GroupsScreen extends Component {
 
   handleRegister = (userID, err) => {
     if (err) {
-      handleError(err);
+      this.handleError(err);
       return;
     }
   };
 
   handleGetUser = (user, err) => {
     if (err) {
-      handleError(err);
+      this.handleError(err);
       return;
     }
     this.setState({ userID: user._id });
@@ -171,9 +171,10 @@ export default class GroupsScreen extends Component {
 
   handleGroups = (groups, err) => {
     if (err) {
-      handleError(err);
+      this.handleError(err);
       return;
     }
+
     this.setState({ groups: groups });
   };
 

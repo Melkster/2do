@@ -15,7 +15,7 @@ var dbfunc = require("./db");
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
   // Database setup: Creates an index on username and makes it unique
-  database.collection("users").createIndex({username: 1}, {unique: true});
+  database.collection("users").createIndex({ username: 1 }, { unique: true });
   //connection event i recieved every time a new user connects to server
   io.on("connection", socket => {
     console.log("A user connected");
@@ -98,6 +98,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns the list of all tasks in the list after the check is made.
     socket.on("checkTask", async (listID, taskID) => {
       try {
+        console.log("server: check task");
         var objListID = new objectID(listID);
         await dbfunc.checkTask(database, objListID, new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, objListID);
@@ -113,6 +114,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns the list of all tasks in the list after the uncheck is made
     socket.on("uncheckTask", async (listID, taskID) => {
       try {
+        console.log("server: uncheck task");
         dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(listID)

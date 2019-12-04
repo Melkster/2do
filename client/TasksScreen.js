@@ -165,7 +165,6 @@ export default class TasksScreen extends Component {
   sortTasks = tasks => {
     checkedTasks = tasks.filter(task => task.checked);
     uncheckedTasks = tasks.filter(task => !task.checked);
-    console.log("nytt state");
     this.setState({ unchecked: uncheckedTasks, checked: checkedTasks });
   };
 
@@ -179,13 +178,11 @@ export default class TasksScreen extends Component {
 
   createNewTask = () => {
     socket.emit("addTask", this.state.listID, "");
-    console.log("inna task");
-    socket.emit("getTasks", listID);
-    console.log("efter");
   };
 
   // Change state of task and move to the other list/section (TODO: improve code)
   toggleTask = item => {
+    console.log(item.value);
     if (item.checked) {
       socket.emit("uncheckTask", this.state.listID, item._id);
     } else {

@@ -43,9 +43,12 @@ describe("Socket event tests for server", async () => {
   it("test group list and task adds", done => {
     var client = io.connect(socketUrl);
 
-    client.on("connect", () => {});
-    client.emit("createGroup", USERID);
-    client.on("createGroup", ((groupID, err) = {}));
-    done();
+    client.on("connect", () => {
+      client.emit("createGroup", USERID, "group1");
+      client.on("createGroup", (groups, err) => {
+        expect(groups).to.not.equal(null);
+        expect(groups[0].name).to.equal("group1");
+      });
+    });
   });
 });

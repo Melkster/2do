@@ -287,7 +287,7 @@ module.exports = {
     var userToRemove = { $pull: { users: userID } };
     var query = { _id: groupID };
     var groupToRemove = { $pull: { groups: groupID } };
-    var userQuery = { groups: groupID };
+    var userQuery = { _id: userID };
     var result, userResult;
     try {
       result = await database.collection("groups").updateOne(query, userToRemove);

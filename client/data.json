@@ -20,11 +20,15 @@
     "id": 0,
     "name": "Grocery list",
     "tasks": [
-      {
-        "id": 0,
-        "value": "Milk",
-        "checked": false
-      }
+      { "id": 1, "value": "Milk", "checked": true },
+      { "id": 2, "value": "Tomato", "checked": true },
+      { "id": 3, "value": "Yoghurt", "checked": true },
+      { "id": 4, "value": "Beans", "checked": true },
+      { "id": 5, "value": "Onion", "checked": true },
+      { "id": 6, "value": "Butter", "checked": false },
+      { "id": 7, "value": "Salmon", "checked": false },
+      { "id": 8, "value": "Salad", "checked": false },
+      { "id": 9, "value": "Cookies", "checked": false }
     ]
   },
 

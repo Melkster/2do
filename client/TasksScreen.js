@@ -53,7 +53,7 @@ export default class TasksScreen extends Component {
         title: "Left",
         data: this.state.unchecked,
         icon: uncheckedIcon,
-        textstyle: styles.uncheckedTask,
+        textstyle: styles.listTextInput,
         header: <Text style={styles.listHeader}> Left </Text>
       },
       {
@@ -128,6 +128,7 @@ export default class TasksScreen extends Component {
     if (section.id == 0) {
       return (
         <TextInput
+          placeholder="Enter name of task"
           onChangeText={text => {
             this.state.unchecked[index].value = text;
             this.setState({ unchecked: this.state.unchecked });
@@ -144,6 +145,7 @@ export default class TasksScreen extends Component {
     } else {
       return (
         <TextInput
+          placeholder="Enter name of task"
           onChangeText={text => {
             this.state.checked[index].value = text;
             this.setState({ checked: this.state.checked });

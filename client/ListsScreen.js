@@ -99,12 +99,13 @@ export default class ListsScreen extends Component {
                       <Image source={section.icon} style={styles.listImage} />
                     </View>
                     <TextInput
+                      placeholder="Enter name of list"
                       onChangeText={text => {
                         this.state.lists[index].name = text;
                         this.setState({ lists: this.state.lists });
                       }}
                       value={this.state.lists[index].name}
-                      style={styles.uncheckedTask}
+                      style={styles.listTextInput}
                       // TODO: onBlur -> update task name in DB
                       onBlur={() => {
                         groupID = this.state.groupID;

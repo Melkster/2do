@@ -55,6 +55,7 @@ export default class GroupsScreen extends Component {
       socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
       socket.on("createGroup", (groups, err) => this.handleGroups(groups, err));
       socket.on("deleteGroup", (groups, err) => this.handleGroups(groups, err));
+      socket.on("renameGroup", (groups, err) => this.handleGroups(groups, err));
     });
   }
 
@@ -107,7 +108,22 @@ export default class GroupsScreen extends Component {
                     <View style={styles.checkbox}>
                       <Image source={section.icon} style={styles.listImage} />
                     </View>
-                    <Text style={styles.listText}>{item.name}</Text>
+                    <TextInput
+                      placeholder="Enter name of group"
+                      onChangeText={text => {
+                        this.state.groups[index].name = text;
+                        this.setState({ groups: this.state.groups });
+                      }}
+                      value={this.state.groups[index].name}
+                      style={styles.listTextInput}
+                      // TODO: onBlur -> update task name in DB
+                      onBlur={() => {
+                        groupID = item._id;
+                        userID = this.state.userID;
+                        newName = this.state.groups[index].name;
+                        socket.emit("renameGroup", groupID, userID, newName);
+                      }}
+                    />
                   </TouchableOpacity>
                 </Swipeout>
               );
@@ -164,7 +180,7 @@ export default class GroupsScreen extends Component {
   };
 
   createNewGroup = () => {
-    socket.emit("createGroup", this.state.userID, "groupName");
+    socket.emit("createGroup", this.state.userID, "");
   };
 
   _signOutAsync = async () => {

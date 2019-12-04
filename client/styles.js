@@ -58,6 +58,9 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingTop: 20
   },
+  listTextInput: {
+    padding: 20
+  },
   listImage: {
     width: 20,
     height: 20,
@@ -73,9 +76,6 @@ const styles = StyleSheet.create({
   checkedTask: {
     textDecorationLine: "line-through",
     color: "grey",
-    padding: 20
-  },
-  uncheckedTask: {
     padding: 20
   },
   addNewItem: {

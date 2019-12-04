@@ -4,10 +4,9 @@
   "description": "Collaborative todo list server",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "nodemon server.js",
-    "install": "mkdir data",
-    "testdb": "jest"
+    "install": "mkdir data"
   },
   "license": "ISC",
   "dependencies": {

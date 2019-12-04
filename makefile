@@ -14,6 +14,9 @@ run_db:
 run_client:
 	$(CLIENT) npm start
 
+run_tests:
+	$(SERVER) npm test
+
 clean:
 	$(SERVER) rm -rf node_modules/
 	$(SERVER) rm -rf data/

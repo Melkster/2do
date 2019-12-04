@@ -8,7 +8,8 @@ var options = {
 
 var USERID;
 var listID;
-
+var group;
+var list;
 describe("Socket event test for the server", async () => {
   it("Test register and authentication", done => {
     var client = io.connect(socketUrl);
@@ -29,15 +30,31 @@ describe("Socket event test for the server", async () => {
           expect(user).to.equal(null);
           client.emit("createGroup", userID, "group1");
           client.on("createGroup", (groups, err) => {
-            expect(groups).to.not.equal(null);
-            expect(groups[0].name).to.equal("group1");
+            var groupID = groups[0]._id;
+            group = groups[0];
+            expect(group._id).to.not.equal(null);
+            expect(group.name).to.equal("group1");
+            client.emit("renameGroup", groupID, userID, "UpdatedGroup");
+            client.on("renameGroup", (groups, err) => {
+              group = groups[0];
+              expect(group.name).to.equal("UpdatedGroup");
+            });
+            client.emit("createList", groupID, "list1");
+            client.on("createList", (lists, err) => {
+              var listID = lists[0]._id;
+              list = lists[0];
+              expect(listID).to.not.equal(null);
+              expect(list.name).to.equal("list1");
+              expect(list.tasks).to.deep.equal([]);
+              expect(lists.length).to.equal(1);
+              client.emit("renameList", groupID, userID, "UpdatedList");
+            });
           });
         });
       });
     });
+    done();
   });
-
-  done();
 });
 
 // async function setup(socket) {

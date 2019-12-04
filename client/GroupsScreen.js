@@ -165,7 +165,6 @@ export default class GroupsScreen extends Component {
       handleError(err);
       return;
     }
-    //console.log("user id: " + user._id);
     this.setState({ userID: user._id });
     socket.emit("getGroups", this.state.userID);
   };
@@ -175,7 +174,6 @@ export default class GroupsScreen extends Component {
       handleError(err);
       return;
     }
-    //console.log(groups);
     this.setState({ groups: groups });
   };
 

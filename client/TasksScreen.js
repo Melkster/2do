@@ -33,12 +33,11 @@ export default class TasksScreen extends Component {
     console.log("mounted TasksScreen");
     this.props.navigation.setParams({ addButton: this.createNewTask });
     socket.on("getTasks", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("addTasks", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("checkTasks", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("uncheckTasks", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("editTasks", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("deleteTasks", (tasks, err) => this.handleTasks(tasks, err));
-    console.log(socket.listeners("addTasks"));
+    socket.on("addTask", (tasks, err) => this.handleTasks(tasks, err));
+    socket.on("checkTask", (tasks, err) => this.handleTasks(tasks, err));
+    socket.on("uncheckTask", (tasks, err) => this.handleTasks(tasks, err));
+    socket.on("editTask", (tasks, err) => this.handleTasks(tasks, err));
+    socket.on("deleteTask", (tasks, err) => this.handleTasks(tasks, err));
   }
 
   componentWillUnmount() {
@@ -171,7 +170,6 @@ export default class TasksScreen extends Component {
   };
 
   handleTasks = (tasks, err) => {
-    console.log("hanterar tasks");
     if (err) {
       console.log(err);
       return;
@@ -181,6 +179,9 @@ export default class TasksScreen extends Component {
 
   createNewTask = () => {
     socket.emit("addTask", this.state.listID, "");
+    console.log("inna task");
+    socket.emit("getTasks", listID);
+    console.log("efter");
   };
 
   // Change state of task and move to the other list/section (TODO: improve code)

@@ -52,7 +52,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Adds tasks to a list, returns the list of all tasks after the task is added
     socket.on("addTask", async (listID, value) => {
       try {
-        console.log("add task");
         var objListID = new objectID(listID);
         var taskID = await dbfunc.addTask(database, objListID, value);
         var tasks = await dbfunc.getTasks(database, objListID);

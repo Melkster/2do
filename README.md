@@ -25,3 +25,4 @@ To start the client, run `make run_client`. You will need an [Expo](https://expo
 on a phone, with which you scan the QR code that shows up in order to run the
 app on it.
 
+To run all tests, run `make run_tests`.

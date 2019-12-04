@@ -11,14 +11,16 @@ module.exports = {
     try {
       result = await database.collection("groups").insertOne(groupToInsert);
       if (!result) {
-        throw "1";
+        const error = new Error("Couldnt insert group into db");
+        error.code = "insertGroup";
+        throw error;
       }
       groupID = result.ops[0]._id;
       var groupIDToInsert = { $push: { groups: groupID } };
       userResult = await database.collection("users").updateOne(userQuery, groupIDToInsert);
     } catch (err) {
-      if ((err = "1")) {
-        throw "Couldnt insert group into db";
+      if ((err.code = "insertGroup")) {
+        throw err.message;
       }
       console.log(err);
       throw "Something went wrong in db";

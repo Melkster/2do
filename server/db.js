@@ -344,7 +344,6 @@ module.exports = {
       throw "Something went wrong in db";
     }
     if (!result) {
-      console.log("asd");
       throw "Couldn't find user";
     }
     return result;

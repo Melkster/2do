@@ -19,7 +19,7 @@ import plusIcon from "./assets/plusIcon.png";
 
 import data from "./data.json";
 import styles from "./styles";
-import HeaderButton from "./Components";
+import HeaderButton from "./CustomComponents";
 
 export default class GroupsScreen extends Component {
   constructor(props) {

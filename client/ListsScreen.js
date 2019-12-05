@@ -17,7 +17,7 @@ import Swipeout from "react-native-swipeout";
 
 import listIcon from "./assets/listIcon.png";
 import newListIcon from "./assets/newListIcon.png";
-import HeaderButton from "./Components";
+import HeaderButton from "./CustomComponents";
 
 import data from "./data.json";
 import styles from "./styles.js";

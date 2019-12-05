@@ -270,6 +270,9 @@ module.exports = {
     }
     //Error handling
     if (result.result.nModified == "0") {
+      var userQuery = { _id: userID };
+      var groupIDToRemove = { $pull: { groups: groupID } };
+      await database.collection("users").updateOne(userQuery, groupIDToRemove);
       throw "Couldn't push the userID into the group";
     }
     if (userResult.result.nModified == "0") {

@@ -348,7 +348,6 @@ module.exports = {
     }
     return result;
   },
-
   // Returns all the tasks from the given listID as an array
   getTasks: async function(database, listID) {
     var query = { "lists._id": listID };
@@ -401,4 +400,5 @@ module.exports = {
     }
     return result.toArray();
   }
+
 };

@@ -39,35 +39,50 @@ const styles = StyleSheet.create({
     padding: 5,
     color: "#fff"
   },
+  listHeaderCheckedTasks: {
+    backgroundColor: "#CDDC89",
+    fontSize: 20,
+    padding: 5,
+    color: "#fff",
+    marginTop: 70
+  },
   listItem: {
     fontSize: 15,
     color: "#000",
     backgroundColor: "#F5F5F5",
     flexDirection: "row"
   },
+  // CHANGE: lägg till en större text-ruta
   listText: {
     flex: 1,
-    padding: 15
+    padding: 15,
+    paddingTop: 20
+  },
+  listTextInput: {
+    padding: 20
   },
   listImage: {
     width: 20,
     height: 20,
-    padding: 15
+    padding: 12
+  },
+  addButtonText: {
+    fontSize: 30,
+    color: "blue"
   },
   addButton: {
-    fontSize: 40,
-    fontWeight: "bold"
+    marginRight: 10
   },
   checkedTask: {
     textDecorationLine: "line-through",
     color: "grey",
     padding: 20
   },
-  uncheckedTask: {
-    padding: 20
-  },
   addNewItem: {
-    padding: 20
+    fontSize: 15,
+    color: "#000",
+    backgroundColor: "#D3D3D3",
+    flexDirection: "row"
   }
 });
 

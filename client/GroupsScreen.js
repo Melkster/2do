@@ -12,9 +12,12 @@ import {
   TouchableOpacity,
   TouchableHighlight
 } from "react-native";
+import Swipeout from "react-native-swipeout";
 
-import groupLogo from "./assets/groupSymbol.png";
-import splash from "./assets/splash.png";
+import groupIcon from "./assets/groupIcon.png";
+import newGroupIcon from "./assets/newGroupIcon.png";
+import plusIcon from "./assets/plusIcon.png";
+
 import data from "./data.json";
 import styles from "./styles.js";
 
@@ -22,9 +25,11 @@ export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
 
-    // get the groups for the user _from DB_
-    var groups = data.Groups;
-    this.state = { groups: groups, text: "test" };
+    // TODO: remove test
+    this.state = { userID: "", groups: [], text: "test" };
+
+    //gets userID (from saved usertoken) and then all the users groups
+    this.getUser();
   }
 
   static navigationOptions = ({ navigation }) => {
@@ -32,12 +37,29 @@ export default class GroupsScreen extends Component {
       title: "Your groups",
       // The "add button" in the top-right corner
       // TODO: change the button to an icon
-      headerRight: <Button title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+      headerRight: (
+        <TouchableOpacity onPress={navigation.getParam("addButton")} style={styles.addButton}>
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
+      )
     };
   };
 
   componentDidMount() {
     this.props.navigation.setParams({ addButton: this.createNewGroup });
+    this.didFocus = this.props.navigation.addListener("didFocus", () => {
+      // TODO: use "getGroups" instead when implemented
+      //socket.on("register", (user, err) => this.handleRegister(user, err));
+      socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
+      socket.on("createGroup", (groups, err) => this.handleGroups(groups, err));
+      socket.on("deleteGroup", (groups, err) => this.handleGroups(groups, err));
+      socket.on("renameGroup", (groups, err) => this.handleGroups(groups, err));
+    });
+  }
+
+  componentWillUnmount() {
+    socket.off();
+    this.didFocus.remove();
   }
 
   render() {
@@ -46,31 +68,72 @@ export default class GroupsScreen extends Component {
         <SectionList
           // we have one section for the actual groups and one for the "add group"-option
           sections={[
-            { id: 0, data: this.state.groups, icon: groupLogo },
-            { id: 1, data: [{ value: "Click to add new group" }], icon: splash }
+            { id: 0, data: this.state.groups, icon: groupIcon },
+            { id: 1, data: [{ value: "Click to add new group" }], icon: newGroupIcon }
           ]}
           // "item" corresponds to a group in the section. When clicked we navigate to the lists of that group
           renderItem={({ item, index, section }) => {
             if (section.id == 0) {
+              // this is the section for all lists
               return (
-                <TouchableOpacity
-                  style={styles.listItem}
-                  onPress={() => {
-                    this.props.navigation.navigate("Lists", { id: item.id, title: item.name, addButton: null });
-                  }}
+                <Swipeout
+                  right={[
+                    {
+                      text: "Delete",
+                      backgroundColor: "red",
+                      onPress: () => {
+                        groupID = item._id;
+                        userID = this.state.userID;
+                        socket.emit("deleteGroup", groupID, userID);
+                      }
+                    }
+                  ]}
+                  autoClose={true}
+                  backgroundColor="#F5F5F5"
                 >
-                  <Image source={groupLogo} style={styles.listImage} />
-                  <Text style={styles.listText}>{item.name}</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.listItem}
+                    onPress={() => {
+                      // TODO: se till att rätt id skickas
+                      this.props.navigation.navigate("Lists", {
+                        id: item._id,
+                        title: item.name,
+                        userID: this.state.userID,
+                        addButton: null
+                      });
+                    }}
+                  >
+                    <View style={styles.checkbox}>
+                      <Image source={section.icon} style={styles.listImage} />
+                    </View>
+                    <TextInput
+                      placeholder="Enter name of group"
+                      onChangeText={text => {
+                        this.state.groups[index].name = text;
+                        this.setState({ groups: this.state.groups });
+                      }}
+                      value={this.state.groups[index].name}
+                      style={styles.listTextInput}
+                      // TODO: onBlur -> update task name in DB
+                      onBlur={() => {
+                        groupID = item._id;
+                        userID = this.state.userID;
+                        newName = this.state.groups[index].name;
+                        socket.emit("renameGroup", groupID, userID, newName);
+                      }}
+                    />
+                  </TouchableOpacity>
+                </Swipeout>
               );
             } else {
+              // this is the section of the "add a new list" item
               return (
-                <View style={styles.listItem}>
+                <View style={styles.addNewItem}>
                   <View style={styles.checkbox}>
                     <Image source={section.icon} style={styles.listImage} />
                   </View>
                   <TouchableOpacity onPress={this.createNewGroup}>
-                    <Text style={styles.addNewItem}>{item.value}</Text>
+                    <Text style={styles.listText}>{item.value}</Text>
                   </TouchableOpacity>
                 </View>
               );
@@ -84,17 +147,34 @@ export default class GroupsScreen extends Component {
       </View>
     );
   }
-
-  createNewGroup = () => {
-    //TODO: get a new group _from DB_
-    newGroup = { id: 0, name: "fake-group", users: [] };
-    this.state.groups.push(newGroup);
-    this.setState({ groups: this.state.groups });
+  handleError = err => {
+    console.log(err);
   };
 
-  //TODO: remove if not used?
-  enterList = list => {
-    this.props.navigation.navigate("Lists", { id: list.id, title: list.name, addButton: null });
+  handleRegister = (userID, err) => {
+    if (err) {
+      this.handleError(err);
+      return;
+    }
+  };
+
+  handleGroups = (groups, err) => {
+    if (err) {
+      this.handleError(err);
+      return;
+    }
+
+    this.setState({ groups: groups });
+  };
+
+  getUser = async function() {
+    const userID = await AsyncStorage.getItem("userToken");
+    this.setState({ userID });
+    socket.emit("getGroups", userID);
+  };
+
+  createNewGroup = () => {
+    socket.emit("createGroup", this.state.userID, "");
   };
 
   _signOutAsync = async () => {

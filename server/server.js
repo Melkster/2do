@@ -14,7 +14,10 @@ var dbfunc = require("./db");
 //Connect to databse
 mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
   var database = db.db("mydb");
-  //connection event recieved every time a new user connects to server
+  // Database setup: Creates an index on username and makes it unique
+  database.collection("users").createIndex({ name: 1 }, { unique: true });
+  //connection event i recieved every time a new user connects to server
+
   io.on("connection", socket => {
     console.log("A user connected");
     // Event that gets called when user navigates to a list, this joines a socket room
@@ -93,6 +96,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns the list of all tasks in the list after the check is made.
     socket.on("checkTask", async (listID, taskID) => {
       try {
+        console.log("server: check task");
         var objListID = new objectID(listID);
         await dbfunc.checkTask(database, objListID, new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, objListID);
@@ -242,19 +246,20 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
             io.emit("authenticate", null, "User does not exist");
           }
         } catch (e) {
+          io.emit("authenticate", null, "User does not exist");
           console.log(e);
         }
       }
     });
 
     // Invites a new user to a group given the userID of the user and the groupID of the group
-    socket.on("inviteUser", async (groupID, userID) => {
+    socket.on("inviteUser", async (groupID, username) => {
       try {
-        await dbfunc.inviteUser(database, new objectID(groupID), new objectID(userID));
-        io.emit("inviteUser", true, null);
+        await dbfunc.inviteUser(database, new objectID(groupID), username);
+        io.emit("inviteUser", null);
       } catch (e) {
         console.log(e);
-        io.emit("inviteUser", null, "Could not invite user");
+        io.emit("inviteUser", "Could not invite user");
       }
     });
 

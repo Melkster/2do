@@ -1,6 +1,5 @@
 CLIENT = cd client &&
 SERVER = cd server &&
-
 install:
 	$(SERVER) npm install --no-optional
 	$(CLIENT) npm install --no-optional
@@ -13,6 +12,9 @@ run_db:
 
 run_client:
 	$(CLIENT) npm start
+
+run_ios:
+	$(CLIENT) expo start --ios
 
 run_tests:
 	$(SERVER) npm test

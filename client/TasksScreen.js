@@ -131,6 +131,7 @@ export default class TasksScreen extends Component {
             this.state.unchecked[index].value = text;
             this.setState({ unchecked: this.state.unchecked });
           }}
+          autoFocus={true}
           value={this.state.unchecked[index].value}
           style={section.textstyle}
           // TODO: onBlur -> update task name in DB

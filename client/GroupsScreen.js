@@ -115,7 +115,8 @@ export default class GroupsScreen extends Component {
                       }}
                       value={this.state.groups[index].name}
                       style={styles.listTextInput}
-                      // TODO: onBlur -> update task name in DB
+                      autoFocus={true}
+                      // onBlur is called when the user finishes writing in the textinput
                       onBlur={() => {
                         groupID = item._id;
                         userID = this.state.userID;

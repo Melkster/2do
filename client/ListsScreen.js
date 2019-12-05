@@ -103,6 +103,7 @@ export default class ListsScreen extends Component {
                         this.state.lists[index].name = text;
                         this.setState({ lists: this.state.lists });
                       }}
+                      autoFocus={true}
                       value={this.state.lists[index].name}
                       style={styles.listTextInput}
                       // TODO: onBlur -> update task name in DB

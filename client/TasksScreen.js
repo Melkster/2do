@@ -55,7 +55,7 @@ export default class TasksScreen extends Component {
       {
         id: 1,
         title: null,
-        data: [{ value: "Type here to add a task!" }],
+        data: [{ value: "Click to add a new task!" }],
         icon: newTaskIcon,
         textstyle: styles.addNewTask,
         header: null
@@ -130,6 +130,7 @@ export default class TasksScreen extends Component {
             this.setState({ unchecked: this.state.unchecked });
           }}
           autoFocus={true}
+          onSubmitEditing={() => this.submitEdit(item, index)}
           value={this.state.unchecked[index].value}
           style={section.textstyle}
           // TODO: onBlur -> update task name in DB
@@ -142,7 +143,6 @@ export default class TasksScreen extends Component {
     } else {
       return (
         <TextInput
-          placeholder="Enter name of task"
           onChangeText={text => {
             this.state.checked[index].value = text;
             this.setState({ checked: this.state.checked });
@@ -178,6 +178,13 @@ export default class TasksScreen extends Component {
     socket.emit("addTask", this.state.listID, "");
   };
 
+  handleKeyPress = e => {
+    console.log(e.nativeEvent.key);
+    if (e.nativeEvent.key == "enter") {
+      console.log("Enter pressed");
+    }
+  };
+
   // Change state of task and move to the other list/section (TODO: improve code)
   toggleTask = item => {
     if (item.checked) {
@@ -187,6 +194,11 @@ export default class TasksScreen extends Component {
     }
   };
 
+  submitEdit = (item, index) => {
+    newName = this.state.unchecked[index].value;
+    this.updateTask(item._id, newName);
+    this.createNewTask();
+  };
   deleteTask = item => {
     socket.emit("deleteTask", this.state.listID, item._id);
   };

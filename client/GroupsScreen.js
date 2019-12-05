@@ -111,6 +111,7 @@ export default class GroupsScreen extends Component {
                       value={this.state.groups[index].name}
                       style={styles.listTextInput}
                       editable={this.state.nameEditable}
+                      pointerEvents="none"
                       autoFocus={true}
                       // onBlur is called when the user finishes writing in the textinput
                       onBlur={() => {
@@ -118,6 +119,7 @@ export default class GroupsScreen extends Component {
                         userID = this.state.userID;
                         newName = this.state.groups[index].name;
                         socket.emit("renameGroup", groupID, userID, newName);
+                        this.setState({ nameEditable: false });
                       }}
                     />
                   </TouchableOpacity>
@@ -172,6 +174,7 @@ export default class GroupsScreen extends Component {
   };
 
   createNewGroup = () => {
+    this.setState({ nameEditable: true });
     socket.emit("createGroup", this.state.userID, "");
   };
 

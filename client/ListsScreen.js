@@ -14,7 +14,7 @@ export default class ListsScreen extends Component {
 
     groupID = this.props.navigation.getParam("id");
     // empty lists-state before we get the lists from server
-    this.state = { lists: [], groupID: groupID, userID: this.props.userID };
+    this.state = { lists: [], groupID: groupID, nameEditable: false };
     // get the lists for the choosen group from DB
     socket.emit("getLists", groupID);
   }
@@ -29,7 +29,6 @@ export default class ListsScreen extends Component {
   };
 
   componentDidMount() {
-    console.log("mounted ListsScreen");
     this.props.navigation.setParams({ addButton: this.createNewList });
     socket.on("getLists", (lists, err) => this.handleLists(lists, err));
 
@@ -99,6 +98,8 @@ export default class ListsScreen extends Component {
                         this.state.lists[index].name = text;
                         this.setState({ lists: this.state.lists });
                       }}
+                      editable={this.state.nameEditable}
+                      pointerEvents="none"
                       autoFocus={true}
                       value={this.state.lists[index].name}
                       style={styles.listTextInput}
@@ -108,6 +109,7 @@ export default class ListsScreen extends Component {
                         listID = item._id;
                         newName = this.state.lists[index].name;
                         socket.emit("renameList", groupID, listID, newName);
+                        this.setState({ nameEditable: false });
                       }}
                     />
                   </TouchableOpacity>
@@ -133,7 +135,6 @@ export default class ListsScreen extends Component {
   }
 
   handleLists = (lists, err) => {
-    console.log("got new lists");
     if (err) {
       console.log(err);
       return;
@@ -142,7 +143,7 @@ export default class ListsScreen extends Component {
   };
 
   createNewList = () => {
-    console.log("tried to create new list");
+    this.setState({ nameEditable: true });
     socket.emit("createList", this.state.groupID, "");
   };
 

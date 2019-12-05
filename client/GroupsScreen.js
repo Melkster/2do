@@ -26,12 +26,11 @@ export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
 
-    // get the groups for the user _from DB_
-    var groups = [];
-    this.state = { userID: "", groups: groups, text: "test" };
-    //socket.emit("register", "1", "1");
-    socket.emit("getUser", "1");
-    //socket.emit("getGroups", this.state.userid);
+    // TODO: remove test
+    this.state = { userID: "", groups: [], text: "test" };
+
+    //gets userID (from saved usertoken) and then all the users groups
+    this.getUser();
   }
 
   static navigationOptions = ({ navigation }) => {
@@ -53,7 +52,6 @@ export default class GroupsScreen extends Component {
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
       // TODO: use "getGroups" instead when implemented
       //socket.on("register", (user, err) => this.handleRegister(user, err));
-      socket.on("getUser", (user, err) => this.handleGetUser(user, err));
       socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
       socket.on("createGroup", (groups, err) => this.handleGroups(groups, err));
       socket.on("deleteGroup", (groups, err) => this.handleGroups(groups, err));
@@ -162,15 +160,6 @@ export default class GroupsScreen extends Component {
     }
   };
 
-  handleGetUser = (user, err) => {
-    if (err) {
-      this.handleError(err);
-      return;
-    }
-    this.setState({ userID: user._id });
-    socket.emit("getGroups", this.state.userID);
-  };
-
   handleGroups = (groups, err) => {
     if (err) {
       this.handleError(err);
@@ -178,6 +167,12 @@ export default class GroupsScreen extends Component {
     }
 
     this.setState({ groups: groups });
+  };
+
+  getUser = async function() {
+    const userID = await AsyncStorage.getItem("userToken");
+    this.setState({ userID });
+    socket.emit("getGroups", userID);
   };
 
   createNewGroup = () => {

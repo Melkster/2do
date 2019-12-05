@@ -1,16 +1,15 @@
 import React, { Component } from "react";
 import {
+  Alert,
   AsyncStorage,
   ScrollView,
   SectionList,
   Text,
   View,
   Button,
-  Modal,
   Image,
   TextInput,
-  TouchableOpacity,
-  TouchableHighlight
+  TouchableOpacity
 } from "react-native";
 import Swipeout from "react-native-swipeout";
 
@@ -19,14 +18,19 @@ import newGroupIcon from "./assets/newGroupIcon.png";
 import plusIcon from "./assets/plusIcon.png";
 
 import data from "./data.json";
-import styles from "./styles.js";
+import styles from "./styles";
+import HeaderButton from "./Components";
 
 export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
 
     // TODO: remove test
-    this.state = { userID: "", groups: [], text: "test" };
+    this.state = {
+      userID: "",
+      groups: [],
+      text: "test"
+    };
 
     //gets userID (from saved usertoken) and then all the users groups
     this.getUser();
@@ -38,9 +42,9 @@ export default class GroupsScreen extends Component {
       // The "add button" in the top-right corner
       // TODO: change the button to an icon
       headerRight: (
-        <TouchableOpacity onPress={navigation.getParam("addButton")} style={styles.addButton}>
-          <Text style={styles.addButtonText}>+</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtonContainer}>
+          <HeaderButton title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+        </View>
       )
     };
   };
@@ -147,8 +151,9 @@ export default class GroupsScreen extends Component {
       </View>
     );
   }
+
   handleError = err => {
-    console.log(err);
+    Alert.alert(err);
   };
 
   handleRegister = (userID, err) => {
@@ -167,7 +172,7 @@ export default class GroupsScreen extends Component {
     this.setState({ groups: groups });
   };
 
-  getUser = async function() {
+  getUser = async () => {
     const userID = await AsyncStorage.getItem("userToken");
     this.setState({ userID });
     socket.emit("getGroups", userID);

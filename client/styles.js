@@ -13,6 +13,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     margin: 10
   },
+  headerButtonContainer: {
+    flexDirection: "row"
+    // borderWidth: 1,
+    // borderColor: "gray"
+  },
+  headerButton: {
+    marginRight: 10
+  },
   input: {
     width: 300,
     height: 44,
@@ -65,10 +73,6 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     padding: 12
-  },
-  addButtonText: {
-    fontSize: 30,
-    color: "blue"
   },
   addButton: {
     marginRight: 10

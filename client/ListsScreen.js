@@ -1,9 +1,23 @@
 import React, { Component } from "react";
-import { Image, Button, ScrollView, View, SectionList, Text, TextInput, TouchableOpacity } from "react-native";
+import {
+  Alert,
+  Image,
+  Button,
+  Keyboard,
+  Modal,
+  ScrollView,
+  SectionList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
+} from "react-native";
 import Swipeout from "react-native-swipeout";
 
 import listIcon from "./assets/listIcon.png";
 import newListIcon from "./assets/newListIcon.png";
+import HeaderButton from "./Components";
 
 import data from "./data.json";
 import styles from "./styles.js";
@@ -14,7 +28,13 @@ export default class ListsScreen extends Component {
 
     groupID = this.props.navigation.getParam("id");
     // empty lists-state before we get the lists from server
-    this.state = { lists: [], groupID: groupID, userID: this.props.userID };
+    this.state = {
+      lists: [],
+      groupID: groupID,
+      userID: this.props.userID,
+      inviteUsername: null,
+      modalVisible: false
+    };
     // get the lists for the choosen group from DB
     socket.emit("getLists", groupID);
   }
@@ -24,14 +44,29 @@ export default class ListsScreen extends Component {
     return {
       title: navigation.getParam("title"),
       // TODO: change the button to an icon....
-      headerRight: <Button title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+      headerRight: (
+        <View style={styles.headerButtonContainer}>
+          <HeaderButton
+            title={"Invite"}
+            onPress={() => {
+              navigation.getParam("setModalVisible")(true);
+            }}
+            style={styles.addButton}
+          />
+          <HeaderButton title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+        </View>
+      )
     };
   };
 
   componentDidMount() {
     console.log("mounted ListsScreen");
-    this.props.navigation.setParams({ addButton: this.createNewList });
+    this.props.navigation.setParams({
+      addButton: this.createNewList,
+      setModalVisible: this._setModalVisible
+    });
     socket.on("getLists", (lists, err) => this.handleLists(lists, err));
+    socket.on("inviteUser", err => this.handleInviteUser(err));
 
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
       // TODO: use "getGroups" instead when implemented
@@ -132,6 +167,24 @@ export default class ListsScreen extends Component {
           }}
           keyExtractor={(group, index) => index}
         />
+        <Modal visible={this.state.modalVisible} animationType={"slide"} onRequestClose={this._submit}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.container}>
+              <TextInput
+                value={this.state.password}
+                onChangeText={inviteUsername => this.setState({ inviteUsername })}
+                placeholder={"Username"}
+                style={styles.input}
+                autoFocus={true}
+              />
+
+              <Button onPress={this._submit} title="Invite user" />
+              <TouchableOpacity style={styles.clearButton} onPress={() => this._setModalVisible(false)}>
+                <Text>Go back</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     );
   }
@@ -143,6 +196,29 @@ export default class ListsScreen extends Component {
       return;
     }
     this.setState({ lists: lists });
+  };
+
+  handleInviteUser = err => {
+    if (err) this.handleError(err);
+    else {
+      this._setModalVisible(false);
+      Alert.alert("User invited successfully");
+    }
+  };
+
+  handleError = err => {
+    Alert.alert(err);
+  };
+
+  _submit = () => {
+    socket.emit("inviteUser", this.state.groupID, this.state.inviteUsername);
+  };
+
+  /**
+   * Sets the visibility of modal.
+   */
+  _setModalVisible = visible => {
+    this.setState({ modalVisible: visible });
   };
 
   createNewList = () => {

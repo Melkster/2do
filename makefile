@@ -1,11 +1,12 @@
 CLIENT = cd client &&
 SERVER = cd server &&
+
 install:
 	$(SERVER) npm install --no-optional
 	$(CLIENT) npm install --no-optional
 
 run_server:
-	make run_db & $(SERVER) npm start
+	(make run_db & $(SERVER) npm start)
 
 run_db:
 	$(SERVER) mongod --dbpath=data

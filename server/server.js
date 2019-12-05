@@ -35,6 +35,15 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+    socket.on("leaveListRoom", async listID => {
+      try {
+        socket.leave(listID);
+        io.emit("leaveListRoom", null);
+      } catch (e) {
+        io.emit("leaveListRoom", e);
+      }
+    });
+
     // Not used for now
     // TODO: groupID in print later
     socket.on("joinGroup", groupID => {

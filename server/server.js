@@ -28,9 +28,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         socket.join(listID);
         var tasks = await dbfunc.getTasks(database, listID);
         //.in(id)
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, e);
+        console.log(e);
       }
     });
 
@@ -62,7 +63,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var taskID = await dbfunc.addTask(database, objListID, value);
         var tasks = await dbfunc.getTasks(database, objListID);
         //.in(listID)
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "could not add task");
         console.log(e);
@@ -104,8 +105,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var objListID = new objectID(listID);
         await dbfunc.checkTask(database, objListID, new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, objListID);
-        //.in(listID)
-        io.emit("getTasks", tasks, null);
+
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not check task");
         console.log(e);
@@ -119,7 +120,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         await dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(listID)
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not uncheck task");
         console.log(e);
@@ -133,7 +134,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         await dbfunc.deleteTask(database, new objectID(taskID));
         //.in(listID)
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not delete task");
         console.log(e);
@@ -174,7 +175,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         await dbfunc.editTask(database, objListID, new objectID(taskID), value);
         var tasks = await dbfunc.getTasks(database, objListID);
         //.in(listID)
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not edit task");
         console.log(e);
@@ -309,7 +310,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("getTasks", async listID => {
       try {
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         console.log(e);
         io.emit("getTasks", null, "Could not get tasks");

@@ -116,7 +116,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("uncheckTask", async (listID, taskID) => {
       try {
         console.log("server: uncheck task");
-        dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
+        await dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(listID)
         io.emit("uncheckTask", tasks, null);

@@ -1,5 +1,6 @@
 CLIENT = cd client &&
 SERVER = cd server &&
+
 install:
 	$(SERVER) npm install --no-optional
 	$(CLIENT) npm install --no-optional

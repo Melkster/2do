@@ -90,6 +90,4 @@ const styles = StyleSheet.create({
   }
 });
 
-// Custom components styles
-
 export default styles;

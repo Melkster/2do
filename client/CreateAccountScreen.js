@@ -81,8 +81,6 @@ export default class LogInScreen extends Component {
     this.setState(state, () => this._credentialsStatus());
   };
 
-  _validateCredentials = (username, password1, password2) => {};
-
   /**
    * Sets this.state.credentialsStatus.
    *

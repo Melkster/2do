@@ -24,7 +24,7 @@ export default class HeaderButton extends Component {
   render() {
     return (
       <View style={styles.headerButton}>
-        <Button title={this.props.title} />
+        <Button title={this.props.title} onPress={this.props.onPress} />
       </View>
     );
   }

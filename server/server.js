@@ -62,7 +62,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var objListID = new objectID(listID);
         var taskID = await dbfunc.addTask(database, objListID, value);
         var tasks = await dbfunc.getTasks(database, objListID);
-        //.in(listID)
         io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "could not add task");
@@ -105,7 +104,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var objListID = new objectID(listID);
         await dbfunc.checkTask(database, objListID, new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, objListID);
-
         io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not check task");
@@ -120,6 +118,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         await dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(listID)
+
         io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not uncheck task");
@@ -134,6 +133,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         await dbfunc.deleteTask(database, new objectID(taskID));
         //.in(listID)
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
+
         io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not delete task");
@@ -174,7 +174,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var objListID = new objectID(listID);
         await dbfunc.editTask(database, objListID, new objectID(taskID), value);
         var tasks = await dbfunc.getTasks(database, objListID);
-        //.in(listID)
         io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         io.emit("getTasks", null, "Could not edit task");

@@ -16,6 +16,9 @@ export default class TasksScreen extends Component {
     // initialize empty tasklist-states (unchecked/checked)
     this.state = { listID: listID, unchecked: [], checked: [] };
     // get the lists for the choosen group from DB
+    socket.emit("enterListRoom", listID);
+
+    //TODO: remove when servercode is updated
     socket.emit("getTasks", listID);
   }
 
@@ -30,14 +33,8 @@ export default class TasksScreen extends Component {
   };
 
   componentDidMount() {
-    console.log("mounted TasksScreen");
     this.props.navigation.setParams({ addButton: this.createNewTask });
     socket.on("getTasks", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("addTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("checkTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("uncheckTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("editTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("deleteTask", (tasks, err) => this.handleTasks(tasks, err));
   }
 
   componentWillUnmount() {
@@ -69,7 +66,7 @@ export default class TasksScreen extends Component {
         data: this.state.checked,
         icon: checkedIcon,
         textstyle: styles.checkedTask,
-        header: <Text style={styles.listHeaderCheckedTasks}> Done </Text>
+        header: <Text style={styles.listHeader}> Done </Text>
       }
     ];
 
@@ -132,6 +129,7 @@ export default class TasksScreen extends Component {
             this.state.unchecked[index].value = text;
             this.setState({ unchecked: this.state.unchecked });
           }}
+          autoFocus={true}
           value={this.state.unchecked[index].value}
           style={section.textstyle}
           // TODO: onBlur -> update task name in DB
@@ -182,7 +180,6 @@ export default class TasksScreen extends Component {
 
   // Change state of task and move to the other list/section (TODO: improve code)
   toggleTask = item => {
-    console.log(item.value);
     if (item.checked) {
       socket.emit("uncheckTask", this.state.listID, item._id);
     } else {

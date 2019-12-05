@@ -39,13 +39,6 @@ const styles = StyleSheet.create({
     padding: 5,
     color: "#fff"
   },
-  listHeaderCheckedTasks: {
-    backgroundColor: "#CDDC89",
-    fontSize: 20,
-    padding: 5,
-    color: "#fff",
-    marginTop: 70
-  },
   listItem: {
     fontSize: 15,
     color: "#000",

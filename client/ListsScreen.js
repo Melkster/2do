@@ -34,16 +34,11 @@ export default class ListsScreen extends Component {
     socket.on("getLists", (lists, err) => this.handleLists(lists, err));
 
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
-      // TODO: use "getGroups" instead when implemented
-      //socket.on("register", (user, err) => this.handleRegister(user, err));
-      socket.on("createList", (lists, err) => this.handleLists(lists, err));
-      socket.on("renameList", (lists, err) => this.handleLists(lists, err));
-      socket.on("deleteList", (lists, err) => this.handleLists(lists, err));
+      socket.on("getLists", (lists, err) => this.handleLists(lists, err));
     });
   }
 
   componentWillUnmount() {
-    console.log("unmount");
     socket.off();
     this.didFocus.remove();
   }
@@ -92,7 +87,7 @@ export default class ListsScreen extends Component {
                   <TouchableOpacity
                     style={styles.listItem}
                     onPress={() => {
-                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name, addButton: null });
+                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name });
                     }}
                   >
                     <View style={styles.checkbox}>
@@ -104,6 +99,7 @@ export default class ListsScreen extends Component {
                         this.state.lists[index].name = text;
                         this.setState({ lists: this.state.lists });
                       }}
+                      autoFocus={true}
                       value={this.state.lists[index].name}
                       style={styles.listTextInput}
                       // TODO: onBlur -> update task name in DB

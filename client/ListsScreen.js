@@ -34,11 +34,7 @@ export default class ListsScreen extends Component {
     socket.on("getLists", (lists, err) => this.handleLists(lists, err));
 
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
-      // TODO: use "getGroups" instead when implemented
-      //socket.on("register", (user, err) => this.handleRegister(user, err));
-      socket.on("createList", (lists, err) => this.handleLists(lists, err));
-      socket.on("renameList", (lists, err) => this.handleLists(lists, err));
-      socket.on("deleteList", (lists, err) => this.handleLists(lists, err));
+      socket.on("getLists", (lists, err) => this.handleLists(lists, err));
     });
   }
 

@@ -26,7 +26,7 @@ export default class GroupsScreen extends Component {
     super(props);
 
     // TODO: remove test
-    this.state = { userID: "", groups: [], text: "test" };
+    this.state = { userID: "", groups: [], nameEditable: false };
 
     //gets userID (from saved usertoken) and then all the users groups
     this.getUser();
@@ -49,12 +49,7 @@ export default class GroupsScreen extends Component {
     this.props.navigation.setParams({ addButton: this.createNewGroup });
     socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
-      // TODO: use "getGroups" instead when implemented
-      //socket.on("register", (user, err) => this.handleRegister(user, err));
       socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
-      socket.on("createGroup", (groups, err) => this.handleGroups(groups, err));
-      socket.on("deleteGroup", (groups, err) => this.handleGroups(groups, err));
-      socket.on("renameGroup", (groups, err) => this.handleGroups(groups, err));
     });
   }
 
@@ -115,6 +110,7 @@ export default class GroupsScreen extends Component {
                       }}
                       value={this.state.groups[index].name}
                       style={styles.listTextInput}
+                      editable={this.state.nameEditable}
                       autoFocus={true}
                       // onBlur is called when the user finishes writing in the textinput
                       onBlur={() => {

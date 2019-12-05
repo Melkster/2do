@@ -16,6 +16,9 @@ export default class TasksScreen extends Component {
     // initialize empty tasklist-states (unchecked/checked)
     this.state = { listID: listID, unchecked: [], checked: [] };
     // get the lists for the choosen group from DB
+    socket.emit("enterListRoom", listID);
+
+    //TODO: remove when servercode is updated
     socket.emit("getTasks", listID);
   }
 
@@ -32,11 +35,6 @@ export default class TasksScreen extends Component {
   componentDidMount() {
     this.props.navigation.setParams({ addButton: this.createNewTask });
     socket.on("getTasks", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("addTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("checkTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("uncheckTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("editTask", (tasks, err) => this.handleTasks(tasks, err));
-    socket.on("deleteTask", (tasks, err) => this.handleTasks(tasks, err));
   }
 
   componentWillUnmount() {
@@ -68,7 +66,7 @@ export default class TasksScreen extends Component {
         data: this.state.checked,
         icon: checkedIcon,
         textstyle: styles.checkedTask,
-        header: <Text style={styles.listHeaderCheckedTasks}> Done </Text>
+        header: <Text style={styles.listHeader}> Done </Text>
       }
     ];
 

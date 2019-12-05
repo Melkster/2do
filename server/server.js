@@ -23,11 +23,15 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Event that gets called when user navigates to a list, this joines a socket room
     // which gets updated everytime any member of the room makes a change
     // remove listID in print later
-    socket.on("enterListRoom", listID => {
-      var id = listID;
-      socket.join(id);
-      //.in(id)
-      io.emit("enterListRoom", "A user has joined the list-room: " + listID);
+    socket.on("enterListRoom", async listID => {
+      try {
+        socket.join(listID);
+        var tasks = await dbfunc.getTasks(database, listID);
+        //.in(id)
+        io.emit("getTasks", tasks, null);
+      } catch (e) {
+        io.emit("getTasks", null, e);
+      }
     });
 
     // Not used for now

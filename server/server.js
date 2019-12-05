@@ -209,17 +209,13 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       } else if (!password) {
         io.emit("register", null, "missing password");
       } else {
-        if (!(await dbfunc.getUser(database, username))) {
-          try {
-            var passwordHash = await hash_password(password);
-            var userID = await dbfunc.registerUser(database, username, passwordHash);
-            io.emit("register", userID, null);
-          } catch (e) {
-            io.emit("register", null, "could not register user");
-            console.log(e);
-          }
-        } else {
-          io.emit("register", null, "a user with that name already exist");
+        try {
+          var passwordHash = await hash_password(password);
+          var userID = await dbfunc.registerUser(database, username, passwordHash);
+          io.emit("register", userID, null);
+        } catch (e) {
+          io.emit("register", null, e);
+          console.log(e);
         }
       }
     });

@@ -19,7 +19,8 @@ import newGroupIcon from "./assets/newGroupIcon.png";
 import plusIcon from "./assets/plusIcon.png";
 
 import data from "./data.json";
-import styles from "./styles.js";
+import styles from "./styles";
+import HeaderButton from "./Components";
 
 export default class GroupsScreen extends Component {
   constructor(props) {
@@ -39,9 +40,10 @@ export default class GroupsScreen extends Component {
       // The "add button" in the top-right corner
       // TODO: change the button to an icon
       headerRight: (
-        <TouchableOpacity onPress={navigation.getParam("addButton")} style={styles.addButton}>
-          <Text style={styles.addButtonText}>+</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtonContainer}>
+          <HeaderButton title={"Invite"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+          <HeaderButton title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+        </View>
       )
     };
   };

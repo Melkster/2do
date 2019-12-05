@@ -47,6 +47,7 @@ export default class GroupsScreen extends Component {
 
   componentDidMount() {
     this.props.navigation.setParams({ addButton: this.createNewGroup });
+    socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
       // TODO: use "getGroups" instead when implemented
       //socket.on("register", (user, err) => this.handleRegister(user, err));

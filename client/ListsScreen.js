@@ -43,7 +43,6 @@ export default class ListsScreen extends Component {
   }
 
   componentWillUnmount() {
-    console.log("unmount");
     socket.off();
     this.didFocus.remove();
   }

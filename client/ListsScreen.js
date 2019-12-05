@@ -92,7 +92,7 @@ export default class ListsScreen extends Component {
                   <TouchableOpacity
                     style={styles.listItem}
                     onPress={() => {
-                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name, addButton: null });
+                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name });
                     }}
                   >
                     <View style={styles.checkbox}>

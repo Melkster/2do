@@ -30,7 +30,6 @@ export default class TasksScreen extends Component {
   };
 
   componentDidMount() {
-    console.log("mounted TasksScreen");
     this.props.navigation.setParams({ addButton: this.createNewTask });
     socket.on("getTasks", (tasks, err) => this.handleTasks(tasks, err));
     socket.on("addTask", (tasks, err) => this.handleTasks(tasks, err));
@@ -182,7 +181,6 @@ export default class TasksScreen extends Component {
 
   // Change state of task and move to the other list/section (TODO: improve code)
   toggleTask = item => {
-    console.log(item.value);
     if (item.checked) {
       socket.emit("uncheckTask", this.state.listID, item._id);
     } else {

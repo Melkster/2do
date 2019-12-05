@@ -98,8 +98,8 @@ export default class GroupsScreen extends Component {
                       this.props.navigation.navigate("Lists", {
                         id: item._id,
                         title: item.name,
-                        userID: this.state.userID,
-                        addButton: null
+                        userID: this.state.userID
+                        //addButton: null
                       });
                     }}
                   >

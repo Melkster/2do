@@ -28,13 +28,7 @@ export default class ListsScreen extends Component {
 
     groupID = this.props.navigation.getParam("id");
     // empty lists-state before we get the lists from server
-    this.state = {
-      lists: [],
-      groupID: groupID,
-      userID: this.props.userID,
-      inviteUsername: null,
-      modalVisible: false
-    };
+    this.state = { lists: [], groupID: groupID, nameEditable: false, inviteUsername: null, modalVisible: false };
     // get the lists for the choosen group from DB
     socket.emit("getLists", groupID);
   }
@@ -60,7 +54,6 @@ export default class ListsScreen extends Component {
   };
 
   componentDidMount() {
-    console.log("mounted ListsScreen");
     this.props.navigation.setParams({
       addButton: this.createNewList,
       setModalVisible: this._setModalVisible
@@ -69,16 +62,11 @@ export default class ListsScreen extends Component {
     socket.on("inviteUser", err => this.handleInviteUser(err));
 
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
-      // TODO: use "getGroups" instead when implemented
-      //socket.on("register", (user, err) => this.handleRegister(user, err));
-      socket.on("createList", (lists, err) => this.handleLists(lists, err));
-      socket.on("renameList", (lists, err) => this.handleLists(lists, err));
-      socket.on("deleteList", (lists, err) => this.handleLists(lists, err));
+      socket.on("getLists", (lists, err) => this.handleLists(lists, err));
     });
   }
 
   componentWillUnmount() {
-    console.log("unmount");
     socket.off();
     this.didFocus.remove();
   }
@@ -114,11 +102,7 @@ export default class ListsScreen extends Component {
                     {
                       text: "Delete",
                       backgroundColor: "red",
-                      onPress: () => {
-                        groupID = this.state.groupID;
-                        listID = item._id;
-                        socket.emit("deleteList", listID, groupID);
-                      }
+                      onPress: () => this.deleteList(item)
                     }
                   ]}
                   autoClose={true}
@@ -127,7 +111,7 @@ export default class ListsScreen extends Component {
                   <TouchableOpacity
                     style={styles.listItem}
                     onPress={() => {
-                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name, addButton: null });
+                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name });
                     }}
                   >
                     <View style={styles.checkbox}>
@@ -139,15 +123,13 @@ export default class ListsScreen extends Component {
                         this.state.lists[index].name = text;
                         this.setState({ lists: this.state.lists });
                       }}
+                      editable={this.state.nameEditable}
+                      pointerEvents="none"
+                      autoFocus={true}
                       value={this.state.lists[index].name}
                       style={styles.listTextInput}
                       // TODO: onBlur -> update task name in DB
-                      onBlur={() => {
-                        groupID = this.state.groupID;
-                        listID = item._id;
-                        newName = this.state.lists[index].name;
-                        socket.emit("renameList", groupID, listID, newName);
-                      }}
+                      onBlur={() => this.renameList(item, index)}
                     />
                   </TouchableOpacity>
                 </Swipeout>
@@ -190,7 +172,6 @@ export default class ListsScreen extends Component {
   }
 
   handleLists = (lists, err) => {
-    console.log("got new lists");
     if (err) {
       console.log(err);
       return;
@@ -222,13 +203,26 @@ export default class ListsScreen extends Component {
   };
 
   createNewList = () => {
-    console.log("tried to create new list");
+    this.setState({ nameEditable: true });
     socket.emit("createList", this.state.groupID, "");
   };
 
+  // TODO: if newName == null -> delete list?
+  renameList = (item, index) => {
+    newName = this.state.lists[index].name;
+    this.setState({ nameEditable: false });
+    if (!newName) {
+      this.deleteList(item);
+      return;
+    }
+    groupID = this.state.groupID;
+    listID = item._id;
+    socket.emit("renameList", groupID, listID, newName);
+  };
+
   deleteList = item => {
-    // TODO: add a warning that all tasks will be deleted?
-    listDeleted = this.state.lists.filter(list => list.id != item.id);
-    this.setState({ lists: listDeleted });
+    groupID = this.state.groupID;
+    listID = item._id;
+    socket.emit("deleteList", listID, groupID);
   };
 }

@@ -28,8 +28,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       io.in(listID).emit("joined", "new user here");
       try {
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
-        //.in(id)
-
         socket.emit("getTasks", tasks, null);
       } catch (e) {
         socket.emit("getTasks", null, e);
@@ -51,7 +49,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("joinGroup", groupID => {
       var id = groupID;
       socket.join(id);
-      console.log(id);
       io.in(id).emit("has joined", "A user has joined the group-room: " + groupID);
     });
 
@@ -70,8 +67,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Adds tasks to a list, returns the list of all tasks after the task is added
     socket.on("addTask", async (listID, value) => {
       try {
-        console.log(listID);
-
         var taskID = await dbfunc.addTask(database, new objectID(listID), value);
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         io.in(listID).emit("getTasks", tasks, null);

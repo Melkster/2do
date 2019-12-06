@@ -23,11 +23,25 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Event that gets called when user navigates to a list, this joines a socket room
     // which gets updated everytime any member of the room makes a change
     // remove listID in print later
-    socket.on("enterListRoom", listID => {
-      var id = listID;
-      socket.join(id);
-      //.in(id)
-      io.emit("enterListRoom", "A user has joined the list-room: " + listID);
+    socket.on("enterListRoom", async listID => {
+      socket.join(listID);
+      io.in(listID).emit("joined", "new user here");
+      try {
+        var tasks = await dbfunc.getTasks(database, new objectID(listID));
+        socket.emit("getTasks", tasks, null);
+      } catch (e) {
+        socket.emit("getTasks", null, e);
+        console.log(e);
+      }
+    });
+
+    socket.on("leaveListRoom", async listID => {
+      try {
+        socket.leave(listID);
+        socket.emit("leaveListRoom", null);
+      } catch (e) {
+        socket.emit("leaveListRoom", e);
+      }
     });
 
     // Not used for now
@@ -35,7 +49,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("joinGroup", groupID => {
       var id = groupID;
       socket.join(id);
-      console.log(id);
       io.in(id).emit("has joined", "A user has joined the group-room: " + groupID);
     });
 
@@ -43,9 +56,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("getLists", async groupID => {
       try {
         var lists = await dbfunc.getLists(database, new objectID(groupID));
-        io.emit("getLists", lists, null);
+        socket.emit("getLists", lists, null);
       } catch (e) {
-        io.emit("getLists", null, "Could not get lists");
+        socket.emit("getLists", null, "Could not get lists");
         console.log(e);
       }
     });
@@ -54,13 +67,11 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Adds tasks to a list, returns the list of all tasks after the task is added
     socket.on("addTask", async (listID, value) => {
       try {
-        var objListID = new objectID(listID);
-        var taskID = await dbfunc.addTask(database, objListID, value);
-        var tasks = await dbfunc.getTasks(database, objListID);
-        //.in(listID)
-        io.emit("getTasks", tasks, null);
+        var taskID = await dbfunc.addTask(database, new objectID(listID), value);
+        var tasks = await dbfunc.getTasks(database, new objectID(listID));
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
-        io.emit("getTasks", null, "could not add task");
+        socket.emit("getTasks", null, e);
         console.log(e);
       }
     });
@@ -72,9 +83,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var objgroupID = new objectID(groupID);
         var listID = await dbfunc.createList(database, objgroupID, value);
         var lists = await dbfunc.getLists(database, objgroupID);
-        io.emit("getLists", lists, null);
+        socket.emit("getLists", lists, null);
       } catch (e) {
-        io.emit("getLists", null, "could not create list");
+        socket.emit("getLists", null, "could not create list");
         console.log(e);
       }
     });
@@ -85,10 +96,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         var groupID = await dbfunc.createGroup(database, new objectID(userID), groupName);
         var groups = await dbfunc.getGroups(database, new objectID(userID));
-        io.emit("getGroups", groups, null);
+        socket.emit("getGroups", groups, null);
       } catch (e) {
         console.log(e);
-        io.emit("getGroups", null, "Could not create group");
+        socket.emit("getGroups", null, "Could not create group");
       }
     });
 
@@ -96,14 +107,12 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns the list of all tasks in the list after the check is made.
     socket.on("checkTask", async (listID, taskID) => {
       try {
-        console.log("server: check task");
         var objListID = new objectID(listID);
         await dbfunc.checkTask(database, objListID, new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, objListID);
-        //.in(listID)
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
-        io.emit("getTasks", null, "Could not check task");
+        socket.emit("getTasks", null, "Could not check task");
         console.log(e);
       }
     });
@@ -115,9 +124,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         await dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(listID)
-        io.emit("getTasks", tasks, null);
+
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
-        io.emit("getTasks", null, "Could not uncheck task");
+        socket.emit("getTasks", null, "Could not uncheck task");
         console.log(e);
       }
     });
@@ -129,9 +139,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         await dbfunc.deleteTask(database, new objectID(taskID));
         //.in(listID)
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
-        io.emit("getTasks", tasks, null);
+
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
-        io.emit("getTasks", null, "Could not delete task");
+        socket.emit("getTasks", null, "Could not delete task");
         console.log(e);
       }
     });
@@ -142,9 +153,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.deleteList(database, new objectID(listID));
         var lists = await dbfunc.getLists(database, new objectID(groupID));
-        io.emit("getLists", lists, null);
+        socket.emit("getLists", lists, null);
       } catch (e) {
-        io.emit("getLists", null, "Could not delete list");
+        socket.emit("getLists", null, "Could not delete list");
         console.log(e);
       }
     });
@@ -155,9 +166,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.deleteGroup(database, new objectID(groupID));
         var groups = await dbfunc.getGroups(database, new objectID(userID));
-        io.emit("getGroups", groups, null);
+        socket.emit("getGroups", groups, null);
       } catch (e) {
-        io.emit("getGroups", null, "Could not delete Group");
+        socket.emit("getGroups", null, "Could not delete Group");
         console.log(e);
       }
     });
@@ -169,10 +180,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var objListID = new objectID(listID);
         await dbfunc.editTask(database, objListID, new objectID(taskID), value);
         var tasks = await dbfunc.getTasks(database, objListID);
-        //.in(listID)
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
-        io.emit("getTasks", null, "Could not edit task");
+        socket.emit("getTasks", null, "Could not edit task");
         console.log(e);
       }
     });
@@ -183,9 +193,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.renameList(database, new objectID(listID), value);
         var lists = await dbfunc.getLists(database, new objectID(groupID));
-        io.emit("getLists", lists, null);
+        socket.emit("getLists", lists, null);
       } catch (e) {
-        io.emit("getLists", null, "Could not rename list");
+        socket.emit("getLists", null, "Could not rename list");
         console.log(e);
       }
     });
@@ -196,9 +206,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.renameGroup(database, new objectID(groupID), value);
         var groups = await dbfunc.getGroups(database, new objectID(userID));
-        io.emit("getGroups", groups, null);
+        socket.emit("getGroups", groups, null);
       } catch (e) {
-        io.emit("getGroups", null, "Could not rename group");
+        socket.emit("getGroups", null, "Could not rename group");
         console.log(e);
       }
     });
@@ -207,16 +217,16 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // TODO: use real databse instead of mock
     socket.on("register", async (username, password) => {
       if (!username) {
-        io.emit("register", null, "missing username");
+        socket.emit("register", null, "missing username");
       } else if (!password) {
-        io.emit("register", null, "missing password");
+        socket.emit("register", null, "missing password");
       } else {
         try {
           var passwordHash = await hash_password(password);
           var userID = await dbfunc.registerUser(database, username, passwordHash);
-          io.emit("register", userID, null);
+          socket.emit("register", userID, null);
         } catch (e) {
-          io.emit("register", null, e);
+          socket.emit("register", null, e);
           console.log(e);
         }
       }
@@ -229,24 +239,24 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // TODO: use real database instead of mock
     socket.on("authenticate", async (username, password) => {
       if (!username) {
-        io.emit("authenticate", null, "missing username");
+        socket.emit("authenticate", null, "missing username");
       } else if (!password) {
-        io.emit("authenticate", null, "missing password");
+        socket.emit("authenticate", null, "missing password");
       } else {
         try {
           var user = await dbfunc.getUser(database, username);
           if (user) {
             if (await authenticate(username, password)) {
               delete user.passwordHash;
-              io.emit("authenticate", user, null);
+              socket.emit("authenticate", user, null);
             } else {
-              io.emit("authenticate", null, "incorrect password");
+              socket.emit("authenticate", null, "incorrect password");
             }
           } else {
-            io.emit("authenticate", null, "User does not exist");
+            socket.emit("authenticate", null, "User does not exist");
           }
         } catch (e) {
-          io.emit("authenticate", null, "User does not exist");
+          socket.emit("authenticate", null, "User does not exist");
           console.log(e);
         }
       }
@@ -256,10 +266,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("inviteUser", async (groupID, username) => {
       try {
         await dbfunc.inviteUser(database, new objectID(groupID), username);
-        io.emit("inviteUser", null);
+        socket.emit("inviteUser", null);
       } catch (e) {
         console.log(e);
-        io.emit("inviteUser", "Could not invite user");
+        socket.emit("inviteUser", "Could not invite user");
       }
     });
 
@@ -268,10 +278,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.leaveGroup(database, new objectID(groupID), new objectID(userID));
         var groups = await dbfunc.getGroups(database, new objectID(userID));
-        io.emit("getGroups", groups, null);
+        socket.emit("getGroups", groups, null);
       } catch (e) {
         console.log(e);
-        io.emit("getGroups", null, "Could not leave group");
+        socket.emit("getGroups", null, "Could not leave group");
       }
     });
 
@@ -280,13 +290,13 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         var user = await dbfunc.getUser(database, username);
         if (user) {
-          io.emit("getUser", user, null);
+          socket.emit("getUser", user, null);
         } else {
-          io.emit("getUser", user, "A user with that name does not exist");
+          socket.emit("getUser", user, "A user with that name does not exist");
         }
       } catch (e) {
         console.log(e);
-        io.emit("getUser", null, "Could not get user");
+        socket.emit("getUser", null, "Could not get user");
       }
     });
 
@@ -294,10 +304,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("getLists", async groupID => {
       try {
         var lists = await dbfunc.getLists(database, new objectID(groupID));
-        io.emit("getLists", lists, null);
+        socket.emit("getLists", lists, null);
       } catch (e) {
         console.log(e);
-        io.emit("getLists", null, "Could not get lists");
+        socket.emit("getLists", null, "Could not get lists");
       }
     });
 
@@ -305,10 +315,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("getTasks", async listID => {
       try {
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
-        io.emit("getTasks", tasks, null);
+        io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
         console.log(e);
-        io.emit("getTasks", null, "Could not get tasks");
+        socket.emit("getTasks", null, "Could not get tasks");
       }
     });
 
@@ -316,10 +326,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("getGroups", async userID => {
       try {
         var groups = await dbfunc.getGroups(database, new objectID(userID));
-        io.emit("getGroups", groups, null);
+        socket.emit("getGroups", groups, null);
       } catch (e) {
         console.log(e);
-        io.emit("getGroups", null, e);
+        socket.emit("getGroups", null, e);
       }
     });
 

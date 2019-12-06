@@ -32,6 +32,7 @@ describe("db tests", () => {
     var createdGroup;
     var createdTask;
     var username = "Axel";
+    var username2 = "Melker";
     var passwordHash = "123";
     var groupName = "Grupp 2";
     var listName = "Matlista";

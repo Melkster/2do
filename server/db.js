@@ -253,6 +253,11 @@ module.exports = {
     try {
       const result = await this.getUser(database, username);
       userID = result._id;
+      var stringGroups = result.groups.map(value => String(value));
+      var stringGroupID = String(groupID);
+      if (stringGroups.includes(stringGroupID)) {
+        throw "User is already in group!";
+      }
     } catch (err) {
       throw err;
     }
@@ -400,5 +405,4 @@ module.exports = {
     }
     return result.toArray();
   }
-
 };

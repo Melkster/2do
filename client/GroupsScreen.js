@@ -1,16 +1,15 @@
 import React, { Component } from "react";
 import {
+  Alert,
   AsyncStorage,
   ScrollView,
   SectionList,
   Text,
   View,
   Button,
-  Modal,
   Image,
   TextInput,
-  TouchableOpacity,
-  TouchableHighlight
+  TouchableOpacity
 } from "react-native";
 import Swipeout from "react-native-swipeout";
 
@@ -19,13 +18,13 @@ import newGroupIcon from "./assets/newGroupIcon.png";
 import plusIcon from "./assets/plusIcon.png";
 
 import data from "./data.json";
-import styles from "./styles.js";
+import styles from "./styles";
+import HeaderButton from "./CustomComponents";
 
 export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
 
-    // TODO: remove test
     this.state = { userID: "", groups: [], nameEditable: false };
 
     //gets userID (from saved usertoken) and then all the users groups
@@ -38,9 +37,9 @@ export default class GroupsScreen extends Component {
       // The "add button" in the top-right corner
       // TODO: change the button to an icon
       headerRight: (
-        <TouchableOpacity onPress={navigation.getParam("addButton")} style={styles.addButton}>
-          <Text style={styles.addButtonText}>+</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtonContainer}>
+          <HeaderButton title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+        </View>
       )
     };
   };
@@ -77,11 +76,7 @@ export default class GroupsScreen extends Component {
                     {
                       text: "Delete",
                       backgroundColor: "red",
-                      onPress: () => {
-                        groupID = item._id;
-                        userID = this.state.userID;
-                        socket.emit("deleteGroup", groupID, userID);
-                      }
+                      onPress: () => this.deleteGroup(item)
                     }
                   ]}
                   autoClose={true}
@@ -111,14 +106,10 @@ export default class GroupsScreen extends Component {
                       value={this.state.groups[index].name}
                       style={styles.listTextInput}
                       editable={this.state.nameEditable}
+                      pointerEvents="none"
                       autoFocus={true}
                       // onBlur is called when the user finishes writing in the textinput
-                      onBlur={() => {
-                        groupID = item._id;
-                        userID = this.state.userID;
-                        newName = this.state.groups[index].name;
-                        socket.emit("renameGroup", groupID, userID, newName);
-                      }}
+                      onBlur={() => this.renameGroup(item, index)}
                     />
                   </TouchableOpacity>
                 </Swipeout>
@@ -145,15 +136,9 @@ export default class GroupsScreen extends Component {
       </View>
     );
   }
-  handleError = err => {
-    console.log(err);
-  };
 
-  handleRegister = (userID, err) => {
-    if (err) {
-      this.handleError(err);
-      return;
-    }
+  handleError = err => {
+    Alert.alert(err);
   };
 
   handleGroups = (groups, err) => {
@@ -165,13 +150,32 @@ export default class GroupsScreen extends Component {
     this.setState({ groups: groups });
   };
 
-  getUser = async function() {
+  getUser = async () => {
     const userID = await AsyncStorage.getItem("userToken");
     this.setState({ userID });
     socket.emit("getGroups", userID);
   };
 
+  renameGroup = (group, index) => {
+    newName = this.state.groups[index].name;
+    if (!newName) {
+      this.deleteGroup(group);
+      return;
+    }
+    groupID = group._id;
+    userID = this.state.userID;
+    socket.emit("renameGroup", groupID, userID, newName);
+    this.setState({ nameEditable: false });
+  };
+
+  deleteGroup = group => {
+    groupID = group._id;
+    userID = this.state.userID;
+    socket.emit("deleteGroup", groupID, userID);
+  };
+
   createNewGroup = () => {
+    this.setState({ nameEditable: true });
     socket.emit("createGroup", this.state.userID, "");
   };
 

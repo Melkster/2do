@@ -44,6 +44,25 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+    socket.on("enterGroupRoom", async groupID => {
+      socket.join(groupID);
+      try {
+        var lists = await dbfunc.getLists(database, new objectID(groupID));
+        socket.emit("getLists", lists, null);
+      } catch (e) {
+        socket.emit("getLists", null, e);
+        console.log(e);
+      }
+    });
+
+    socket.on("leaveGroupRoom", async groupID => {
+      try {
+        socket.leave(groupID);
+        socket.emit("leaveGroupRoom", null);
+      } catch (e) {
+        socket.emit("leaveListRoom", e);
+      }
+    });
     // Not used for now
     // TODO: groupID in print later
     socket.on("joinGroup", groupID => {

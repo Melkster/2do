@@ -30,9 +30,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(id)
 
-        io.in(listID).emit("getTasks", tasks, null);
+        socket.emit("getTasks", tasks, null);
       } catch (e) {
-        io.in(listID).emit("getTasks", null, e);
+        socket.emit("getTasks", null, e);
         console.log(e);
       }
     });

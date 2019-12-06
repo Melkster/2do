@@ -25,11 +25,10 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // remove listID in print later
     socket.on("enterListRoom", async listID => {
       socket.join(listID);
+      io.in(listID).emit("joined", "new user here");
       try {
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         //.in(id)
-        console.log("joining", listID);
-        io.in(listID).emit("joined", "new user here");
 
         io.in(listID).emit("getTasks", tasks, null);
       } catch (e) {
@@ -41,9 +40,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("leaveListRoom", async listID => {
       try {
         socket.leave(listID);
-        io.emit("leaveListRoom", null);
+        socket.emit("leaveListRoom", null);
       } catch (e) {
-        io.emit("leaveListRoom", e);
+        socket.emit("leaveListRoom", e);
       }
     });
 
@@ -113,7 +112,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     // Returns the list of all tasks in the list after the check is made.
     socket.on("checkTask", async (listID, taskID) => {
       try {
-        console.log("server: check task");
         var objListID = new objectID(listID);
         await dbfunc.checkTask(database, objListID, new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, objListID);

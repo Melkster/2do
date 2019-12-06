@@ -73,11 +73,7 @@ export default class ListsScreen extends Component {
                     {
                       text: "Delete",
                       backgroundColor: "red",
-                      onPress: () => {
-                        groupID = this.state.groupID;
-                        listID = item._id;
-                        socket.emit("deleteList", listID, groupID);
-                      }
+                      onPress: () => this.deleteList(item)
                     }
                   ]}
                   autoClose={true}
@@ -104,13 +100,7 @@ export default class ListsScreen extends Component {
                       value={this.state.lists[index].name}
                       style={styles.listTextInput}
                       // TODO: onBlur -> update task name in DB
-                      onBlur={() => {
-                        groupID = this.state.groupID;
-                        listID = item._id;
-                        newName = this.state.lists[index].name;
-                        socket.emit("renameList", groupID, listID, newName);
-                        this.setState({ nameEditable: false });
-                      }}
+                      onBlur={() => this.renameList(item, index)}
                     />
                   </TouchableOpacity>
                 </Swipeout>
@@ -147,9 +137,22 @@ export default class ListsScreen extends Component {
     socket.emit("createList", this.state.groupID, "");
   };
 
+  // TODO: if newName == null -> delete list?
+  renameList = (item, index) => {
+    newName = this.state.lists[index].name;
+    this.setState({ nameEditable: false });
+    if (!newName) {
+      this.deleteList(item);
+      return;
+    }
+    groupID = this.state.groupID;
+    listID = item._id;
+    socket.emit("renameList", groupID, listID, newName);
+  };
+
   deleteList = item => {
-    // TODO: add a warning that all tasks will be deleted?
-    listDeleted = this.state.lists.filter(list => list.id != item.id);
-    this.setState({ lists: listDeleted });
+    groupID = this.state.groupID;
+    listID = item._id;
+    socket.emit("deleteList", listID, groupID);
   };
 }

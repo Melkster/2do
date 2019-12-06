@@ -77,11 +77,7 @@ export default class GroupsScreen extends Component {
                     {
                       text: "Delete",
                       backgroundColor: "red",
-                      onPress: () => {
-                        groupID = item._id;
-                        userID = this.state.userID;
-                        socket.emit("deleteGroup", groupID, userID);
-                      }
+                      onPress: () => this.deleteGroup(item)
                     }
                   ]}
                   autoClose={true}
@@ -114,13 +110,7 @@ export default class GroupsScreen extends Component {
                       pointerEvents="none"
                       autoFocus={true}
                       // onBlur is called when the user finishes writing in the textinput
-                      onBlur={() => {
-                        groupID = item._id;
-                        userID = this.state.userID;
-                        newName = this.state.groups[index].name;
-                        socket.emit("renameGroup", groupID, userID, newName);
-                        this.setState({ nameEditable: false });
-                      }}
+                      onBlur={() => this.renameGroup(item, index)}
                     />
                   </TouchableOpacity>
                 </Swipeout>
@@ -151,13 +141,6 @@ export default class GroupsScreen extends Component {
     console.log(err);
   };
 
-  handleRegister = (userID, err) => {
-    if (err) {
-      this.handleError(err);
-      return;
-    }
-  };
-
   handleGroups = (groups, err) => {
     if (err) {
       this.handleError(err);
@@ -171,6 +154,24 @@ export default class GroupsScreen extends Component {
     const userID = await AsyncStorage.getItem("userToken");
     this.setState({ userID });
     socket.emit("getGroups", userID);
+  };
+
+  renameGroup = (group, index) => {
+    newName = this.state.groups[index].name;
+    if (!newName) {
+      this.deleteGroup(group);
+      return;
+    }
+    groupID = group._id;
+    userID = this.state.userID;
+    socket.emit("renameGroup", groupID, userID, newName);
+    this.setState({ nameEditable: false });
+  };
+
+  deleteGroup = group => {
+    groupID = group._id;
+    userID = this.state.userID;
+    socket.emit("deleteGroup", groupID, userID);
   };
 
   createNewGroup = () => {

@@ -13,8 +13,11 @@ export default class TasksScreen extends Component {
   constructor(props) {
     super(props);
     listID = this.props.navigation.getParam("id");
-    // initialize empty tasklist-states (unchecked/checked)
-    this.state = { listID: listID, unchecked: [], checked: [] };
+
+    // initialize empty tasklist-states (unchecked/checked),
+    // autofocus -false means we won't automatically focus on the textinput-fields for each task
+    this.state = { listID: listID, unchecked: [], checked: [], autoFocus: false };
+
     // get the lists for the choosen group from DB
     socket.emit("enterListRoom", listID);
 
@@ -22,7 +25,12 @@ export default class TasksScreen extends Component {
     socket.emit("getTasks", listID);
   }
 
-  // set the title for the page
+  /**
+   * Sets the header for the tasks screen.
+   * An object with 'title' and 'headerRight' is returned.
+   * The name of the list is displayed as 'title'.
+   * 'headerRight' consists of the add button (to add more tasks)
+   */
   static navigationOptions = ({ navigation }) => {
     title = navigation.getParam("title");
     return {
@@ -32,17 +40,28 @@ export default class TasksScreen extends Component {
     };
   };
 
+  /**
+   * Is called when the screen mounts. Turns on socket listeners.
+   * Sets the correct function 'createNewTask' to be called when the
+   * addButton in the header is pressed.
+   */
   componentDidMount() {
     this.props.navigation.setParams({ addButton: this.createNewTask });
     socket.on("getTasks", (tasks, err) => this.handleTasks(tasks, err));
   }
 
+  /**
+   * Is called when the screen unmounts. Turns off socket listeners.
+   */
   componentWillUnmount() {
     socket.off();
   }
 
   render() {
-    // we have sections for: unchecked tasks, checked tasks and one for the "add task"-option
+    /**
+     * we have sections for: unchecked tasks,
+     * checked tasks and one for the "add task"-option
+     */
     sections = [
       {
         id: 0,
@@ -118,9 +137,15 @@ export default class TasksScreen extends Component {
     );
   }
 
-  // TODO: TextInput component should cover most of the item (easier to click)
-  // Try to optimize code using "checked"/"unchecked"
-  updateText = (item, index, section) => {
+  /**
+   * Returns a TextInput-component used to display/change each tasks name.
+   * There are 2 types of TextInputs that can be returned depending on the
+   * section.id (if it is a checked or unchecked task).
+   * 'task' is the task which will be related to that TextInput,
+   * 'index' is the tasks index in the checked/unchecked list,
+   * 'section' is the section where the task is (0: unchecked, 2: checked)
+   */
+  updateText = (task, index, section) => {
     if (section.id == 0) {
       return (
         <TextInput
@@ -129,14 +154,16 @@ export default class TasksScreen extends Component {
             this.state.unchecked[index].value = text;
             this.setState({ unchecked: this.state.unchecked });
           }}
-          autoFocus={true}
-          onSubmitEditing={() => this.submitEdit(item, index)}
+          //autoFocus: if true the user automatically focus on the textinput
+          autoFocus={this.state.autoFocus}
+          // onSubmitEditing: gets called when you press enter
+          onSubmitEditing={() => this.submitEdit(index)}
           value={this.state.unchecked[index].value}
           style={section.textstyle}
-          // TODO: onBlur -> update task name in DB
+          // onBlur: gets called when you leave the text-input
           onBlur={() => {
             newName = this.state.unchecked[index].value;
-            this.updateTask(item, newName);
+            this.renameTask(task, newName);
           }}
         />
       );
@@ -149,23 +176,20 @@ export default class TasksScreen extends Component {
           }}
           value={this.state.checked[index].value}
           style={section.textstyle}
-          // TODO: onBlur -> update task name in DB
-
           onBlur={() => {
             newName = this.state.checked[index].value;
-            this.updateTask(item, newName);
+            this.renameTask(task, newName);
           }}
         />
       );
     }
   };
 
-  sortTasks = tasks => {
-    checkedTasks = tasks.filter(task => task.checked);
-    uncheckedTasks = tasks.filter(task => !task.checked);
-    this.setState({ unchecked: uncheckedTasks, checked: checkedTasks });
-  };
-
+  /**
+   * Called when we recieve socket events from the server.
+   * 'tasks' is the new list of tasks and 'err' the potential error-message.
+   * We sort the received tasks since we need them seperated in checked/unchecked tasks.
+   */
   handleTasks = (tasks, err) => {
     if (err) {
       console.log(err);
@@ -174,18 +198,29 @@ export default class TasksScreen extends Component {
     this.sortTasks(tasks);
   };
 
+  /**
+   * Used to sort a list of tasks into checked/unchecked tasks.
+   * 'tasks' is a list of tasks.
+   */
+  sortTasks = tasks => {
+    checkedTasks = tasks.filter(task => task.checked);
+    uncheckedTasks = tasks.filter(task => !task.checked);
+    this.setState({ unchecked: uncheckedTasks, checked: checkedTasks });
+  };
+
+  /**
+   * Called to create a new empty task at the end of the list.
+   * AutoFocus is set to 'true' which makes the cursor automatically
+   * focus on the new textinput.
+   */
   createNewTask = () => {
+    this.setState({ autoFocus: true });
     socket.emit("addTask", this.state.listID, "");
   };
 
-  handleKeyPress = e => {
-    console.log(e.nativeEvent.key);
-    if (e.nativeEvent.key == "enter") {
-      console.log("Enter pressed");
-    }
-  };
-
-  // Change state of task and move to the other list/section (TODO: improve code)
+  /**
+   * Toggles between the tasks states of being checked or unchecked.
+   */
   toggleTask = item => {
     if (item.checked) {
       socket.emit("uncheckTask", this.state.listID, item._id);
@@ -194,16 +229,36 @@ export default class TasksScreen extends Component {
     }
   };
 
-  submitEdit = (item, index) => {
+  /**
+   * Called when a user press 'enter' from the textinput-field.
+   * 'index' is the index of the task in the list of unchecked tasks.
+   * If the textinput-field of the current task is not empty
+   * - a new empty task will be created below it
+   */
+  submitEdit = index => {
     newName = this.state.unchecked[index].value;
-    this.updateTask(item._id, newName);
-    this.createNewTask();
-  };
-  deleteTask = item => {
-    socket.emit("deleteTask", this.state.listID, item._id);
+    if (newName) {
+      this.createNewTask();
+    }
   };
 
-  updateTask = (task, newName) => {
+  /**
+   * Takes 'task' as input and deletes that task
+   */
+  deleteTask = task => {
+    socket.emit("deleteTask", this.state.listID, task._id);
+  };
+
+  /**
+   * Renames a task.
+   * Takes a task 'task' and the new name 'newName'.
+   * If 'newName' is empty the task will instead be deleted.
+   */
+  renameTask = (task, newName) => {
+    if (!newName) {
+      this.deleteTask(task);
+      return;
+    }
     listID = this.state.listID;
     taskID = task._id;
     socket.emit("editTask", listID, taskID, newName);

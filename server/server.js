@@ -22,7 +22,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     console.log("A user connected");
     // Event that gets called when user navigates to a list, this joines a socket room
     // which gets updated everytime any member of the room makes a change
-    // remove listID in print later
     socket.on("enterListRoom", async listID => {
       socket.join(listID);
       io.in(listID).emit("joined", "new user here");
@@ -35,6 +34,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+    // Event for leaving socket list room so updates from the tasklist
+    // no longer will be sent to a user who nolonger is watching the list
     socket.on("leaveListRoom", async listID => {
       try {
         socket.leave(listID);
@@ -75,7 +76,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
-    // TODO: Use rooms later when that is implemented correctly
     // Adds tasks to a list, returns the list of all tasks after the task is added
     socket.on("addTask", async (listID, value) => {
       try {
@@ -135,8 +135,6 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.uncheckTask(database, new objectID(listID), new objectID(taskID));
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
-        //.in(listID)
-
         io.in(listID).emit("getTasks", tasks, null);
       } catch (err) {
         socket.emit("getTasks", null, "Could not uncheck task");
@@ -149,9 +147,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
     socket.on("deleteTask", async (listID, taskID) => {
       try {
         await dbfunc.deleteTask(database, new objectID(taskID));
-        //.in(listID)
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
-
         io.in(listID).emit("getTasks", tasks, null);
       } catch (err) {
         socket.emit("getTasks", null, "Could not delete task");

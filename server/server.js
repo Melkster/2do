@@ -63,19 +63,12 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         socket.emit("leaveListRoom", e);
       }
     });
-    // Not used for now
-    // TODO: groupID in print later
-    socket.on("joinGroup", groupID => {
-      var id = groupID;
-      socket.join(id);
-      io.in(id).emit("has joined", "A user has joined the group-room: " + groupID);
-    });
 
     // Returns all lists in a group given a groupID
     socket.on("getLists", async groupID => {
       try {
         var lists = await dbfunc.getLists(database, new objectID(groupID));
-        socket.emit("getLists", lists, null);
+        io.in(groupID).emit("getLists", lists, null);
       } catch (e) {
         socket.emit("getLists", null, "Could not get lists");
         console.log(e);
@@ -102,7 +95,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var objgroupID = new objectID(groupID);
         var listID = await dbfunc.createList(database, objgroupID, value);
         var lists = await dbfunc.getLists(database, objgroupID);
-        socket.emit("getLists", lists, null);
+        io.in(groupID).emit("getLists", lists, null);
       } catch (e) {
         socket.emit("getLists", null, "could not create list");
         console.log(e);
@@ -212,7 +205,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.renameList(database, new objectID(listID), value);
         var lists = await dbfunc.getLists(database, new objectID(groupID));
-        socket.emit("getLists", lists, null);
+        io.in(groupID).emit("getLists", lists, null);
       } catch (e) {
         socket.emit("getLists", null, "Could not rename list");
         console.log(e);

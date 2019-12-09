@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  KeyboardAvoidingView,
   View
 } from "react-native";
 import Swipeout from "react-native-swipeout";
@@ -73,101 +74,115 @@ export default class ListsScreen extends Component {
 
   render() {
     return (
-      <View>
-        <SectionList
-          // we have one section for the actual lists and one for the "add list"-option
-          sections={[
-            {
-              id: 0,
-              title: "Lists",
-              data: this.state.lists,
-              icon: listIcon,
-              header: <Text style={styles.listHeader}> Lists </Text>
-            },
-            {
-              id: 1,
-              title: null,
-              data: [{ value: "Click to add new list" }],
-              icon: newListIcon,
-              header: null
-            }
-          ]}
-          renderSectionHeader={({ section }) => section.header}
-          //possibly add subtitle for listitem and in group (nr of tasks/members)
-          renderItem={({ item, index, section }) => {
-            if (section.id == 0) {
-              return (
-                <Swipeout
-                  right={[
-                    {
-                      text: "Delete",
-                      backgroundColor: "red",
-                      onPress: () => this.deleteList(item)
-                    }
-                  ]}
-                  autoClose={true}
-                  backgroundColor="#F5F5F5"
-                >
-                  <TouchableOpacity
-                    style={styles.listItem}
-                    onPress={() => {
-                      this.props.navigation.navigate("Tasks", { id: item._id, title: item.name });
-                    }}
-                  >
-                    <View style={styles.checkbox}>
-                      <Image source={section.icon} style={styles.listImage} />
+      <KeyboardAvoidingView
+        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
+        behavior="padding"
+        enabled
+        keyboardVerticalOffset={100}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <SectionList
+              // we have one section for the actual lists and one for the "add list"-option
+              sections={[
+                {
+                  id: 0,
+                  title: "Lists",
+                  data: this.state.lists,
+                  icon: listIcon,
+                  header: <Text style={styles.listHeader}> Lists </Text>
+                },
+                {
+                  id: 1,
+                  title: null,
+                  data: [{ value: "Click to add new list" }],
+                  icon: newListIcon,
+                  header: null
+                }
+              ]}
+              renderSectionHeader={({ section }) => section.header}
+              //possibly add subtitle for listitem and in group (nr of tasks/members)
+              renderItem={({ item, index, section }) => {
+                if (section.id == 0) {
+                  return (
+                    <Swipeout
+                      right={[
+                        {
+                          text: "Rename",
+                          backgroundColor: "blue"
+                          //onPress: () => this.setState({ nameEditable: true })
+                        },
+                        {
+                          text: "Delete",
+                          backgroundColor: "red",
+                          onPress: () => this.deleteList(item)
+                        }
+                      ]}
+                      autoClose={true}
+                      backgroundColor="#F5F5F5"
+                    >
+                      <TouchableOpacity
+                        style={styles.listItem}
+                        onPress={() => {
+                          this.props.navigation.navigate("Tasks", { id: item._id, title: item.name });
+                        }}
+                      >
+                        <View style={styles.checkbox}>
+                          <Image source={section.icon} style={styles.listImage} />
+                        </View>
+                        <TextInput
+                          placeholder="Enter name of list"
+                          onChangeText={text => {
+                            this.state.lists[index].name = text;
+                            this.setState({ lists: this.state.lists });
+                          }}
+                          editable={this.state.nameEditable}
+                          pointerEvents="none"
+                          autoFocus={true}
+                          value={this.state.lists[index].name}
+                          style={styles.listTextInput}
+                          // TODO: onBlur -> update task name in DB
+                          onBlur={() => this.renameList(item, index)}
+                        />
+                      </TouchableOpacity>
+                    </Swipeout>
+                  );
+                } else {
+                  return (
+                    <View style={styles.addNewItem}>
+                      <View style={styles.checkbox}>
+                        <Image source={section.icon} style={styles.listImage} />
+                      </View>
+                      <TouchableOpacity onPress={this.createNewList}>
+                        <Text style={styles.listText}>{item.value}</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TextInput
-                      placeholder="Enter name of list"
-                      onChangeText={text => {
-                        this.state.lists[index].name = text;
-                        this.setState({ lists: this.state.lists });
-                      }}
-                      editable={this.state.nameEditable}
-                      pointerEvents="none"
-                      autoFocus={true}
-                      value={this.state.lists[index].name}
-                      style={styles.listTextInput}
-                      // TODO: onBlur -> update task name in DB
-                      onBlur={() => this.renameList(item, index)}
-                    />
-                  </TouchableOpacity>
-                </Swipeout>
-              );
-            } else {
-              return (
-                <View style={styles.addNewItem}>
-                  <View style={styles.checkbox}>
-                    <Image source={section.icon} style={styles.listImage} />
-                  </View>
-                  <TouchableOpacity onPress={this.createNewList}>
-                    <Text style={styles.listText}>{item.value}</Text>
+                  );
+                }
+              }}
+              keyExtractor={(group, index) => index}
+            />
+            <Modal visible={this.state.modalVisible} animationType={"slide"} onRequestClose={this._submit}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.container}>
+                  <TextInput
+                    value={this.state.password}
+                    onChangeText={inviteUsername => this.setState({ inviteUsername })}
+                    placeholder={"Username"}
+                    style={styles.input}
+                    autoFocus={true}
+                  />
+
+                  <Button onPress={this._submit} title="Invite user" />
+                  <TouchableOpacity style={styles.clearButton} onPress={() => this._setModalVisible(false)}>
+                    <Text>Go back</Text>
                   </TouchableOpacity>
                 </View>
-              );
-            }
-          }}
-          keyExtractor={(group, index) => index}
-        />
-        <Modal visible={this.state.modalVisible} animationType={"slide"} onRequestClose={this._submit}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.container}>
-              <TextInput
-                value={this.state.password}
-                onChangeText={inviteUsername => this.setState({ inviteUsername })}
-                placeholder={"Username"}
-                style={styles.input}
-                autoFocus={true}
-              />
-
-              <Button onPress={this._submit} title="Invite user" />
-              <TouchableOpacity style={styles.clearButton} onPress={() => this._setModalVisible(false)}>
-                <Text>Go back</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-      </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     );
   }
 

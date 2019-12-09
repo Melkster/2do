@@ -29,9 +29,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         socket.emit("getTasks", tasks, null);
-      } catch (e) {
-        socket.emit("getTasks", null, e);
-        console.log(e);
+      } catch (err) {
+        socket.emit("getTasks", null, err);
+        console.log(err);
       }
     });
 
@@ -39,8 +39,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         socket.leave(listID);
         socket.emit("leaveListRoom", null);
-      } catch (e) {
-        socket.emit("leaveListRoom", e);
+      } catch (err) {
+        socket.emit("leaveListRoom", err);
       }
     });
 
@@ -49,9 +49,9 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         var lists = await dbfunc.getLists(database, new objectID(groupID));
         socket.emit("getLists", lists, null);
-      } catch (e) {
-        socket.emit("getLists", null, e);
-        console.log(e);
+      } catch (err) {
+        socket.emit("getLists", null, err);
+        console.log(err);
       }
     });
 
@@ -60,7 +60,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         socket.leave(groupID);
         socket.emit("leaveGroupRoom", null);
       } catch (err) {
-        socket.emit("leaveListRoom", e);
+        socket.emit("leaveListRoom", err);
       }
     });
 
@@ -83,7 +83,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var tasks = await dbfunc.getTasks(database, new objectID(listID));
         io.in(listID).emit("getTasks", tasks, null);
       } catch (err) {
-        socket.emit("getTasks", null, e);
+        socket.emit("getTasks", null, err);
         console.log(err);
       }
     });
@@ -238,7 +238,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
           var userID = await dbfunc.registerUser(database, username, passwordHash);
           socket.emit("register", userID, null);
         } catch (err) {
-          socket.emit("register", null, e);
+          socket.emit("register", null, err);
           console.log(err);
         }
       }

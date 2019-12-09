@@ -1,5 +1,17 @@
 import React, { Component } from "react";
-import { Image, ScrollView, View, SectionList, Text, TextInput, TouchableOpacity, Button } from "react-native";
+import {
+  Image,
+  ScrollView,
+  View,
+  SectionList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Button,
+  Keyboard,
+  KeyboardAvoidingView
+} from "react-native";
 //import { Cell, Section, TableView } from "react-native-tableview-simple";
 import Swipeout from "react-native-swipeout";
 
@@ -90,50 +102,59 @@ export default class TasksScreen extends Component {
     ];
 
     return (
-      <View>
-        <SectionList
-          sections={sections}
-          renderSectionHeader={({ section }) => section.header}
-          renderItem={({ item, index, section }) => {
-            if (section.title) {
-              return (
-                <Swipeout
-                  right={[
-                    {
-                      text: "Delete",
-                      backgroundColor: "red",
-                      onPress: () => {
-                        this.deleteTask(item);
-                      }
-                    }
-                  ]}
-                  autoClose={true}
-                  backgroundColor="#F5F5F5"
-                >
-                  <View style={styles.listItem}>
-                    <TouchableOpacity style={styles.checkbox} onPress={this.toggleTask.bind(this, item)}>
-                      <Image source={section.icon} style={styles.listImage} />
-                    </TouchableOpacity>
-                    {this.updateText(item, index, section)}
-                  </View>
-                </Swipeout>
-              );
-            } else {
-              return (
-                <View style={styles.addNewItem}>
-                  <View style={styles.checkbox}>
-                    <Image source={section.icon} style={styles.listImage} />
-                  </View>
-                  <TouchableOpacity onPress={this.createNewTask}>
-                    <Text style={styles.listText}>{item.value}</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            }
-          }}
-          keyExtractor={(item, index) => index}
-        />
-      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
+        behavior="padding"
+        enabled
+        keyboardVerticalOffset={100}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <SectionList
+              sections={sections}
+              renderSectionHeader={({ section }) => section.header}
+              renderItem={({ item, index, section }) => {
+                if (section.title) {
+                  return (
+                    <Swipeout
+                      right={[
+                        {
+                          text: "Delete",
+                          backgroundColor: "red",
+                          onPress: () => {
+                            this.deleteTask(item);
+                          }
+                        }
+                      ]}
+                      autoClose={true}
+                      backgroundColor="#F5F5F5"
+                    >
+                      <View style={styles.listItem}>
+                        <TouchableOpacity style={styles.checkbox} onPress={this.toggleTask.bind(this, item)}>
+                          <Image source={section.icon} style={styles.listImage} />
+                        </TouchableOpacity>
+                        {this.updateText(item, index, section)}
+                      </View>
+                    </Swipeout>
+                  );
+                } else {
+                  return (
+                    <View style={styles.addNewItem}>
+                      <View style={styles.checkbox}>
+                        <Image source={section.icon} style={styles.listImage} />
+                      </View>
+                      <TouchableOpacity onPress={this.createNewTask}>
+                        <Text style={styles.listText}>{item.value}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                }
+              }}
+              keyExtractor={(item, index) => index}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     );
   }
 

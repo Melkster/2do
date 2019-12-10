@@ -253,6 +253,11 @@ module.exports = {
     try {
       const result = await this.getUser(database, username);
       userID = result._id;
+      var stringGroups = result.groups.map(value => String(value));
+      var stringGroupID = String(groupID);
+      if (stringGroups.includes(stringGroupID)) {
+        throw "User is already in group!";
+      }
     } catch (err) {
       throw err;
     }
@@ -399,6 +404,35 @@ module.exports = {
       throw "Couldn't find the groups";
     }
     return result.toArray();
-  }
+  },
 
+  // Returns the username of the users thar is in the group
+  getUsernameGroup: async function(database, groupID) {
+    var userIDs, result, userResult;
+    try {
+      var query = { _id: groupID };
+      result = await database.collection("groups").findOne(query);
+    } catch (err) {
+      console.log(err);
+      throw "Something went wrong in db";
+    }
+    if (!result) {
+      throw "Couldn't find the group";
+    }
+    userIDs = result.users;
+    try {
+      var query = { _id: { $in: userIDs } };
+      var projection = { projection: { _id: 0, passwordHash: 0, groups: 0 } };
+      userResult = await database.collection("users").find(query, projection);
+    } catch (err) {
+      console.log(err);
+      throw "Something went wrong in db";
+    }
+    if (!userResult) {
+      throw "Couldn't find the users";
+    }
+    const temp = await userResult.toArray();
+    const toReturn = temp.map(value => value.name);
+    return toReturn;
+  }
 };

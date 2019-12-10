@@ -23,17 +23,18 @@ describe("db tests", () => {
     const groups = db.collection("groups");
     // Variables
     var userID;
-    var groupID;
+    var groupID, groupID2;
     var listID;
     var taskID;
     var mockUser;
     var mockGroup;
-    var registeredUser;
+    var registeredUser, registeredUser2;
     var createdGroup;
     var createdTask;
     var username = "Axel";
     var username2 = "Melker";
     var passwordHash = "123";
+    var passwordHash2 = "passwordtest";
     var groupName = "Grupp 2";
     var listName = "Matlista";
     var taskValue = "Falukorv";
@@ -99,12 +100,12 @@ describe("db tests", () => {
     expect(createdGroup).toEqual(mockGroup);
 
     // Tests: inviteUser, getUser
-    await dbfunc.inviteUser(db, groupID, username);
+    userID2 = await dbfunc.registerUser(db, username2, passwordHash2);
+    await dbfunc.inviteUser(db, groupID, username2);
     createdGroup = await groups.findOne({ _id: groupID });
-    mockGroup.users.push(userID);
+    mockGroup.users.push(userID2);
     expect(createdGroup).toEqual(mockGroup);
     registeredUser = await dbfunc.getUser(db, username);
-    mockUser.groups.push(groupID);
     expect(registeredUser).toEqual(mockUser);
 
     // Tests: getGroups
@@ -121,10 +122,14 @@ describe("db tests", () => {
     var mockList = [{ _id: listID, name: listName, tasks: mockTasks }];
     expect(list).toEqual(mockList);
 
+    // Tests: getUsernameGroup
+    var usernames = await dbfunc.getUsernameGroup(db, groupID);
+    expect(usernames).toEqual([username, username2]);
+
     // Tests: leaveGroup
     await dbfunc.leaveGroup(db, groupID, userID);
     createdGroup = await groups.findOne({ _id: groupID });
-    mockGroup.users = [];
+    mockGroup.users.shift();
     expect(createdGroup).toEqual(mockGroup);
     registeredUser = await dbfunc.getUser(db, username);
     mockUser.groups = [];

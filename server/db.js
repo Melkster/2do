@@ -182,8 +182,11 @@ module.exports = {
       console.log(err);
       throw "Something went wrong in db";
     }
-    if (result.result.nModified == "0") {
-      throw "Couldn't edit the task";
+    if (result.result.n == "0") {
+      throw "Couldn't find the task";
+    }
+    if (result.result.nModified == "0" && result.result.n == "1") {
+      throw "Found the task but couldn't edit it";
     }
   },
 

@@ -28,7 +28,7 @@ export default class TasksScreen extends Component {
 
     // initialize empty tasklist-states (unchecked/checked),
     // autofocus -false means we won't automatically focus on the textinput-fields for each task
-    this.state = { listID: listID, unchecked: [], checked: [], edit: null, autoFocus: false };
+    this.state = { listID: listID, unchecked: [], checked: [], pressedEnter: false, autoFocus: false };
 
     // get the lists for the choosen group from DB
     socket.emit("enterListRoom", listID);
@@ -184,10 +184,10 @@ export default class TasksScreen extends Component {
           // onBlur: gets called when you leave the text-input
           onBlur={() => {
             newName = this.state.unchecked[index].value;
-            //newName = this.state.edit;
+
             this.renameTask(task, newName);
           }}
-          onSubmitEditing={() => this.submitEdit(index)}
+          onSubmitEditing={this.submitEdit}
         />
       );
     } else {
@@ -234,10 +234,11 @@ export default class TasksScreen extends Component {
   };
 
   checkEditState = () => {
-    editName = this.state.edit;
-    if (editName != null) {
-      this.createNewTask(editName);
-      this.setState({ edit: null });
+    pressedEnter = this.state.pressedEnter;
+
+    if (pressedEnter) {
+      this.createNewTask("");
+      this.setState({ pressedEnter: false });
     }
   };
 
@@ -247,8 +248,8 @@ export default class TasksScreen extends Component {
    * focus on the new textinput.
    */
   createNewTask = value => {
-    emptyTask = { value: value, _id: null, checked: false };
-    this.state.unchecked.push(emptyTask);
+    task = { value: value, _id: null, checked: false };
+    this.state.unchecked.push(task);
     this.setState({ autoFocus: true, unchecked: this.state.unchecked });
   };
 
@@ -269,8 +270,8 @@ export default class TasksScreen extends Component {
    * If the textinput-field of the current task is not empty
    * - a new empty task will be created below it
    */
-  submitEdit = index => {
-    this.setState({ edit: "" });
+  submitEdit = () => {
+    this.setState({ pressedEnter: true });
   };
 
   /**
@@ -279,11 +280,11 @@ export default class TasksScreen extends Component {
   deleteTask = task => {
     listID = this.state.listID;
     taskID = task._id;
-    if (!taskID) {
+    if (taskID) {
+      socket.emit("deleteTask", listID, taskID);
+    } else {
       this.state.unchecked.pop();
       this.setState({ unchecked: this.state.unchecked });
-    } else {
-      socket.emit("deleteTask", listID, taskID);
     }
   };
 

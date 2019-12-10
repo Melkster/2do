@@ -25,7 +25,7 @@ export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { userID: "", groups: [], nameEditable: false };
+    this.state = { userID: "", groups: [], nameEditable: false, refreshing: false };
 
     //gets userID (from saved usertoken) and then all the users groups
     this.getUser();
@@ -59,7 +59,7 @@ export default class GroupsScreen extends Component {
 
   render() {
     return (
-      <View>
+      <ScrollView>
         <SectionList
           // we have one section for the actual groups and one for the "add group"-option
           sections={[
@@ -129,11 +129,19 @@ export default class GroupsScreen extends Component {
             }
           }}
           keyExtractor={(group, index) => index}
+          refreshing={this.state.refreshing}
+          onRefresh={() => {
+            this.setState({ refreshing: true });
+            socket.emit("getGroups", this.state.userID);
+            Alert.alert("Refreshed!");
+            this.setState({ refreshing: false });
+            // return <RefreshControl refreshing={refreshing} onRefresh={() => console.log("refresh")} />;
+          }}
         />
         <View>
           <Button title="Sign me out" onPress={this._signOutAsync} />
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -142,12 +150,11 @@ export default class GroupsScreen extends Component {
   };
 
   handleGroups = (groups, err) => {
-    if (err) {
-      this.handleError(err);
-      return;
+    if (err) this.handleError(err);
+    else {
+      console.log(groups);
+      this.setState({ groups: groups, refreshing: false });
     }
-
-    this.setState({ groups: groups });
   };
 
   getUser = async () => {

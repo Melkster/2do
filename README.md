@@ -19,6 +19,8 @@ Collaborative to do lists
 
 All commands should be run in the project root directory.
 
+To install all dependencies run `make install`.
+
 To start the server and database, run `make run_server`.
 
 To start the client, run `make run_client`. You will need an [Expo](https://expo.io/) app running

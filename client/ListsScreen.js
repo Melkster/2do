@@ -31,7 +31,7 @@ export default class ListsScreen extends Component {
     // empty lists-state before we get the lists from server
     this.state = { lists: [], groupID: groupID, nameEditable: false, inviteUsername: null, modalVisible: false };
     // get the lists for the choosen group from DB
-    socket.emit("getLists", groupID);
+    socket.emit("enterGroupRoom", groupID);
   }
 
   // set the title for the page (from props)
@@ -68,6 +68,7 @@ export default class ListsScreen extends Component {
   }
 
   componentWillUnmount() {
+    socket.on("leaveGroupRoom", this.state.groupID);
     socket.off();
     this.didFocus.remove();
   }

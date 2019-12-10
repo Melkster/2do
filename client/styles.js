@@ -80,10 +80,6 @@ const styles = StyleSheet.create({
     color: "#000",
     backgroundColor: "#D3D3D3",
     flexDirection: "row"
-  },
-  test: {
-    backgroundColor: "red",
-    flex: 1
   }
 });
 

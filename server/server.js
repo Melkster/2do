@@ -61,7 +61,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         socket.leave(groupID);
         socket.emit("leaveGroupRoom", null);
       } catch (err) {
-        socket.emit("leaveListRoom", err);
+        socket.emit("leaveGroupRoom", err);
       }
     });
 

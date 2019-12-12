@@ -8,6 +8,7 @@ import {
   View,
   Button,
   Image,
+  RefreshControl,
   TextInput,
   TouchableOpacity
 } from "react-native";
@@ -59,7 +60,19 @@ export default class GroupsScreen extends Component {
 
   render() {
     return (
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={() => {
+              this.setState({ refreshing: true });
+              socket.emit("getGroups", this.state.userID);
+              Alert.alert("Refreshed!");
+              this.setState({ refreshing: false });
+            }}
+          />
+        }
+      >
         <SectionList
           // we have one section for the actual groups and one for the "add group"-option
           sections={[
@@ -129,14 +142,6 @@ export default class GroupsScreen extends Component {
             }
           }}
           keyExtractor={(group, index) => index}
-          refreshing={this.state.refreshing}
-          onRefresh={() => {
-            this.setState({ refreshing: true });
-            socket.emit("getGroups", this.state.userID);
-            Alert.alert("Refreshed!");
-            this.setState({ refreshing: false });
-            // return <RefreshControl refreshing={refreshing} onRefresh={() => console.log("refresh")} />;
-          }}
         />
         <View>
           <Button title="Sign me out" onPress={this._signOutAsync} />

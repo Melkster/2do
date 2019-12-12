@@ -341,6 +341,8 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       }
     });
 
+    // Returns list of all the users in a group
+    // Given the groupID of the group
     socket.on("getUsersInGroup", async groupID => {
       try {
         var users = await dbfunc.getUsernameGroup(database, new objectID(groupID));

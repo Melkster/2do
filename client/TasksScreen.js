@@ -28,7 +28,7 @@ export default class TasksScreen extends Component {
 
     // initialize empty tasklist-states (unchecked/checked),
     // autofocus -false means we won't automatically focus on the textinput-fields for each task
-    this.state = { listID: listID, unchecked: [], checked: [], pressedEnter: false, autoFocus: false };
+    this.state = { listID: listID, unchecked: [], checked: [], pressedEnter: false, autoFocus: false, edit: null };
 
     // get the lists for the choosen group from DB
     socket.emit("enterListRoom", listID);
@@ -171,7 +171,7 @@ export default class TasksScreen extends Component {
           placeholder="Enter name of task"
           onChangeText={text => {
             this.state.unchecked[index].value = text;
-            this.setState({ unchecked: this.state.unchecked });
+            this.setState({ unchecked: this.state.unchecked, edit: text });
           }}
           //onFocus={this.setState({ savedTask: this.state.unchecked[index].value })}
           //onFocus={console.log("fokus")}
@@ -184,7 +184,7 @@ export default class TasksScreen extends Component {
           // onBlur: gets called when you leave the text-input
           onBlur={() => {
             newName = this.state.unchecked[index].value;
-
+            this.setState({ edit: null, autoFocus: false });
             this.renameTask(task, newName);
           }}
           onSubmitEditing={this.submitEdit}
@@ -235,7 +235,12 @@ export default class TasksScreen extends Component {
 
   checkEditState = () => {
     pressedEnter = this.state.pressedEnter;
+    edit = this.state.edit;
 
+    if (edit) {
+      this.createNewTask(edit);
+      this.setState({ edit: null });
+    }
     if (pressedEnter) {
       this.createNewTask("");
       this.setState({ pressedEnter: false });

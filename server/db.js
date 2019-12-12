@@ -409,7 +409,7 @@ module.exports = {
     return result.toArray();
   },
 
-  // Returns the username of the users thar is in the group
+  // Returns the username of the users that is in the group
   getUsernameGroup: async function(database, groupID) {
     var userIDs, result, userResult;
     try {

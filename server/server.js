@@ -190,7 +190,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         var tasks = await dbfunc.getTasks(database, objListID);
         io.in(listID).emit("getTasks", tasks, null);
       } catch (err) {
-        socket.emit("getTasks", null, "Could not edit task");
+        socket.emit("getTasks", null, err);
         console.log(err);
       }
     });
@@ -277,7 +277,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
         socket.emit("inviteUser", null);
       } catch (err) {
         console.log(err);
-        socket.emit("inviteUser", "Could not invite user");
+        socket.emit("inviteUser", err);
       }
     });
 
@@ -338,6 +338,16 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       } catch (err) {
         console.log(err);
         socket.emit("getGroups", null, e);
+      }
+    });
+
+    socket.on("getUsersInGroup", async groupID => {
+      try {
+        var users = await dbfunc.getUsernameGroup(database, new objectID(groupID));
+        socket.emit("getUsersInGroup", users, null);
+      } catch (err) {
+        socket.emit("getUsersInGroup", null, err);
+        console.log(err);
       }
     });
 

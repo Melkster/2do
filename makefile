@@ -19,6 +19,7 @@ run_ios:
 
 run_tests:
 	$(SERVER) npm test
+	$(CLIENT) npm test
 
 clean_db:
 	$(SERVER) rm -rf data/

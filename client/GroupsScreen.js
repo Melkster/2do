@@ -10,7 +10,10 @@ import {
   Image,
   RefreshControl,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView
 } from "react-native";
 import Swipeout from "react-native-swipeout";
 
@@ -60,93 +63,109 @@ export default class GroupsScreen extends Component {
 
   render() {
     return (
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={this.state.refreshing}
-            onRefresh={() => {
-              this.setState({ refreshing: true });
-              socket.emit("getGroups", this.state.userID);
-              Alert.alert("Refreshed!");
-              this.setState({ refreshing: false });
-            }}
-          />
-        }
+      <KeyboardAvoidingView
+        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
+        behavior="padding"
+        enabled
+        keyboardVerticalOffset={100}
       >
-        <SectionList
-          // we have one section for the actual groups and one for the "add group"-option
-          sections={[
-            { id: 0, data: this.state.groups, icon: groupIcon },
-            { id: 1, data: [{ value: "Click to add new group" }], icon: newGroupIcon }
-          ]}
-          // "item" corresponds to a group in the section. When clicked we navigate to the lists of that group
-          renderItem={({ item, index, section }) => {
-            if (section.id == 0) {
-              // this is the section for all lists
-              return (
-                <Swipeout
-                  right={[
-                    {
-                      text: "Delete",
-                      backgroundColor: "red",
-                      onPress: () => this.deleteGroup(item)
-                    }
-                  ]}
-                  autoClose={true}
-                  backgroundColor="#F5F5F5"
-                >
-                  <TouchableOpacity
-                    style={styles.listItem}
-                    onPress={() => {
-                      // TODO: se till att rätt id skickas
-                      this.props.navigation.navigate("Lists", {
-                        id: item._id,
-                        title: item.name,
-                        userID: this.state.userID
-                        //addButton: null
-                      });
-                    }}
-                  >
-                    <View style={styles.checkbox}>
-                      <Image source={section.icon} style={styles.listImage} />
-                    </View>
-                    <TextInput
-                      placeholder="Enter name of group"
-                      onChangeText={text => {
-                        this.state.groups[index].name = text;
-                        this.setState({ groups: this.state.groups });
-                      }}
-                      value={this.state.groups[index].name}
-                      style={styles.listTextInput}
-                      editable={this.state.nameEditable}
-                      pointerEvents="none"
-                      autoFocus={true}
-                      // onBlur is called when the user finishes writing in the textinput
-                      onBlur={() => this.renameGroup(item, index)}
-                    />
-                  </TouchableOpacity>
-                </Swipeout>
-              );
-            } else {
-              // this is the section of the "add a new list" item
-              return (
-                <View style={styles.addNewItem}>
-                  <View style={styles.checkbox}>
-                    <Image source={section.icon} style={styles.listImage} />
-                  </View>
-                  <TouchableOpacity onPress={this.createNewGroup}>
-                    <Text style={styles.listText}>{item.value}</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            }
-          }}
-          keyExtractor={(group, index) => index}
-        />
-        <View>
-          <Button title="Sign me out" onPress={this._signOutAsync} />
-        </View>
-      </ScrollView>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={() => {
+                this.setState({ refreshing: true });
+                socket.emit("getGroups", this.state.userID);
+                Alert.alert("Refreshed!");
+                this.setState({ refreshing: false });
+              }}
+            />
+          }
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ flex: 1 }}>
+              <SectionList
+                // we have one section for the actual groups and one for the "add group"-option
+                sections={[
+                  { id: 0, data: this.state.groups, icon: groupIcon },
+                  { id: 1, data: [{ value: "Click to add new group" }], icon: newGroupIcon }
+                ]}
+                // "item" corresponds to a group in the section. When clicked we navigate to the lists of that group
+                renderItem={({ item, index, section }) => {
+                  if (section.id == 0) {
+                    // this is the section for all lists
+                    return (
+                      <Swipeout
+                        right={[
+                          {
+                            text: "Rename",
+                            backgroundColor: "blue"
+                            //onPress: () => this.setState({ nameEditable: true })
+                          },
+                          {
+                            text: "Delete",
+                            backgroundColor: "red",
+                            onPress: () => this.deleteGroup(item)
+                          }
+                        ]}
+                        autoClose={true}
+                        backgroundColor="#F5F5F5"
+                      >
+                        <TouchableOpacity
+                          style={styles.listItem}
+                          onPress={() => {
+                            // TODO: se till att rätt id skickas
+                            this.props.navigation.navigate("Lists", {
+                              id: item._id,
+                              title: item.name,
+                              userID: this.state.userID
+                              //addButton: null
+                            });
+                          }}
+                        >
+                          <View style={styles.checkbox}>
+                            <Image source={section.icon} style={styles.listImage} />
+                          </View>
+                          <TextInput
+                            placeholder="Enter name of group"
+                            onChangeText={text => {
+                              this.state.groups[index].name = text;
+                              this.setState({ groups: this.state.groups });
+                            }}
+                            value={this.state.groups[index].name}
+                            style={styles.listTextInput}
+                            editable={this.state.nameEditable}
+                            pointerEvents="none"
+                            autoFocus={true}
+                            // onBlur is called when the user finishes writing in the textinput
+                            onBlur={() => this.renameGroup(item, index)}
+                          />
+                        </TouchableOpacity>
+                      </Swipeout>
+                    );
+                  } else {
+                    // this is the section of the "add a new list" item
+                    return (
+                      <View style={styles.addNewItem}>
+                        <View style={styles.checkbox}>
+                          <Image source={section.icon} style={styles.listImage} />
+                        </View>
+                        <TouchableOpacity onPress={this.createNewGroup}>
+                          <Text style={styles.listText}>{item.value}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  }
+                }}
+                keyExtractor={(group, index) => index}
+              />
+              <View style={{ margin: 40 }}>
+                <Button title="Sign me out" onPress={this._signOutAsync} />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 

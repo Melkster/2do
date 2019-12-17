@@ -1,5 +1,17 @@
 import React, { Component } from "react";
-import { Image, ScrollView, View, SectionList, Text, TextInput, TouchableOpacity, Button } from "react-native";
+import {
+  Image,
+  ScrollView,
+  View,
+  SectionList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Button,
+  Keyboard,
+  KeyboardAvoidingView
+} from "react-native";
 //import { Cell, Section, TableView } from "react-native-tableview-simple";
 import Swipeout from "react-native-swipeout";
 
@@ -16,13 +28,10 @@ export default class TasksScreen extends Component {
 
     // initialize empty tasklist-states (unchecked/checked),
     // autofocus -false means we won't automatically focus on the textinput-fields for each task
-    this.state = { listID: listID, unchecked: [], checked: [], autoFocus: false };
+    this.state = { listID: listID, unchecked: [], checked: [], pressedEnter: false, autoFocus: false, edit: null };
 
     // get the lists for the choosen group from DB
     socket.emit("enterListRoom", listID);
-
-    //TODO: remove when servercode is updated
-    socket.emit("getTasks", listID);
   }
 
   /**
@@ -46,7 +55,7 @@ export default class TasksScreen extends Component {
    * addButton in the header is pressed.
    */
   componentDidMount() {
-    this.props.navigation.setParams({ addButton: this.createNewTask });
+    this.props.navigation.setParams({ addButton: this.createNewTask("") });
     socket.on("getTasks", (tasks, err) => this.handleTasks(tasks, err));
   }
 
@@ -54,6 +63,7 @@ export default class TasksScreen extends Component {
    * Is called when the screen unmounts. Turns off socket listeners.
    */
   componentWillUnmount() {
+    socket.on("leaveListRoom", this.state.listID);
     socket.off();
   }
 
@@ -90,50 +100,59 @@ export default class TasksScreen extends Component {
     ];
 
     return (
-      <View>
-        <SectionList
-          sections={sections}
-          renderSectionHeader={({ section }) => section.header}
-          renderItem={({ item, index, section }) => {
-            if (section.title) {
-              return (
-                <Swipeout
-                  right={[
-                    {
-                      text: "Delete",
-                      backgroundColor: "red",
-                      onPress: () => {
-                        this.deleteTask(item);
-                      }
-                    }
-                  ]}
-                  autoClose={true}
-                  backgroundColor="#F5F5F5"
-                >
-                  <View style={styles.listItem}>
-                    <TouchableOpacity style={styles.checkbox} onPress={this.toggleTask.bind(this, item)}>
-                      <Image source={section.icon} style={styles.listImage} />
-                    </TouchableOpacity>
-                    {this.updateText(item, index, section)}
-                  </View>
-                </Swipeout>
-              );
-            } else {
-              return (
-                <View style={styles.addNewItem}>
-                  <View style={styles.checkbox}>
-                    <Image source={section.icon} style={styles.listImage} />
-                  </View>
-                  <TouchableOpacity onPress={this.createNewTask}>
-                    <Text style={styles.listText}>{item.value}</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            }
-          }}
-          keyExtractor={(item, index) => index}
-        />
-      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
+        behavior="padding"
+        enabled
+        keyboardVerticalOffset={100}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <SectionList
+              sections={sections}
+              renderSectionHeader={({ section }) => section.header}
+              renderItem={({ item, index, section }) => {
+                if (section.title) {
+                  return (
+                    <Swipeout
+                      right={[
+                        {
+                          text: "Delete",
+                          backgroundColor: "red",
+                          onPress: () => {
+                            this.deleteTask(item);
+                          }
+                        }
+                      ]}
+                      autoClose={true}
+                      backgroundColor="#F5F5F5"
+                    >
+                      <View style={styles.listItem}>
+                        <TouchableOpacity style={styles.checkbox} onPress={this.toggleTask.bind(this, item)}>
+                          <Image source={section.icon} style={styles.listImage} />
+                        </TouchableOpacity>
+                        {this.updateText(item, index, section)}
+                      </View>
+                    </Swipeout>
+                  );
+                } else {
+                  return (
+                    <View style={styles.addNewItem}>
+                      <View style={styles.checkbox}>
+                        <Image source={section.icon} style={styles.listImage} />
+                      </View>
+                      <TouchableOpacity onPress={() => this.createNewTask("")}>
+                        <Text style={styles.listText}>{item.value}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                }
+              }}
+              keyExtractor={(item, index) => index}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     );
   }
 
@@ -152,19 +171,23 @@ export default class TasksScreen extends Component {
           placeholder="Enter name of task"
           onChangeText={text => {
             this.state.unchecked[index].value = text;
-            this.setState({ unchecked: this.state.unchecked });
+            this.setState({ unchecked: this.state.unchecked, edit: text });
           }}
+          //onFocus={this.setState({ savedTask: this.state.unchecked[index].value })}
+          //onFocus={console.log("fokus")}
+
           //autoFocus: if true the user automatically focus on the textinput
           autoFocus={this.state.autoFocus}
           // onSubmitEditing: gets called when you press enter
-          onSubmitEditing={() => this.submitEdit(index)}
           value={this.state.unchecked[index].value}
           style={section.textstyle}
           // onBlur: gets called when you leave the text-input
           onBlur={() => {
             newName = this.state.unchecked[index].value;
+            this.setState({ edit: null, autoFocus: false });
             this.renameTask(task, newName);
           }}
+          onSubmitEditing={this.submitEdit}
         />
       );
     } else {
@@ -193,6 +216,7 @@ export default class TasksScreen extends Component {
   handleTasks = (tasks, err) => {
     if (err) {
       console.log(err);
+      this.checkEditState();
       return;
     }
     this.sortTasks(tasks);
@@ -206,6 +230,21 @@ export default class TasksScreen extends Component {
     checkedTasks = tasks.filter(task => task.checked);
     uncheckedTasks = tasks.filter(task => !task.checked);
     this.setState({ unchecked: uncheckedTasks, checked: checkedTasks });
+    this.checkEditState();
+  };
+
+  checkEditState = () => {
+    pressedEnter = this.state.pressedEnter;
+    edit = this.state.edit;
+
+    if (edit) {
+      this.createNewTask(edit);
+      this.setState({ edit: null });
+    }
+    if (pressedEnter) {
+      this.createNewTask("");
+      this.setState({ pressedEnter: false });
+    }
   };
 
   /**
@@ -213,9 +252,10 @@ export default class TasksScreen extends Component {
    * AutoFocus is set to 'true' which makes the cursor automatically
    * focus on the new textinput.
    */
-  createNewTask = () => {
-    this.setState({ autoFocus: true });
-    socket.emit("addTask", this.state.listID, "");
+  createNewTask = value => {
+    task = { value: value, _id: null, checked: false };
+    this.state.unchecked.push(task);
+    this.setState({ autoFocus: true, unchecked: this.state.unchecked });
   };
 
   /**
@@ -235,19 +275,29 @@ export default class TasksScreen extends Component {
    * If the textinput-field of the current task is not empty
    * - a new empty task will be created below it
    */
-  submitEdit = index => {
-    newName = this.state.unchecked[index].value;
-    if (newName) {
-      this.createNewTask();
-    }
+  submitEdit = () => {
+    this.setState({ pressedEnter: true });
   };
 
   /**
    * Takes 'task' as input and deletes that task
    */
   deleteTask = task => {
-    socket.emit("deleteTask", this.state.listID, task._id);
+    listID = this.state.listID;
+    taskID = task._id;
+    if (taskID) {
+      socket.emit("deleteTask", listID, taskID);
+    } else {
+      this.state.unchecked.pop();
+      this.setState({ unchecked: this.state.unchecked });
+    }
   };
+
+  /*
+  onBlurUnchecked = (task, index) => {
+    newName = this.state.unchecked[index].value;
+    this.renameTask(task, newName);
+  };*/
 
   /**
    * Renames a task.
@@ -261,6 +311,11 @@ export default class TasksScreen extends Component {
     }
     listID = this.state.listID;
     taskID = task._id;
-    socket.emit("editTask", listID, taskID, newName);
+
+    if (!taskID) {
+      socket.emit("addTask", listID, newName);
+    } else {
+      socket.emit("editTask", listID, taskID, newName);
+    }
   };
 }

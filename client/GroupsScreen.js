@@ -29,7 +29,12 @@ export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { userID: "", groups: [], nameEditable: false, refreshing: false };
+    this.state = {
+      userID: "",
+      groups: [],
+      nameEditable: false,
+      refreshing: false
+    };
 
     //gets userID (from saved usertoken) and then all the users groups
     this.getUser();
@@ -70,17 +75,7 @@ export default class GroupsScreen extends Component {
         keyboardVerticalOffset={100}
       >
         <ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.refreshing}
-              onRefresh={() => {
-                this.setState({ refreshing: true });
-                socket.emit("getGroups", this.state.userID);
-                Alert.alert("Refreshed!");
-                this.setState({ refreshing: false });
-              }}
-            />
-          }
+          refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.handleRefresh} />}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={{ flex: 1 }}>
@@ -175,10 +170,13 @@ export default class GroupsScreen extends Component {
 
   handleGroups = (groups, err) => {
     if (err) this.handleError(err);
-    else {
-      console.log(groups);
-      this.setState({ groups: groups, refreshing: false });
-    }
+    else this.setState({ groups: groups, refreshing: false });
+  };
+
+  handleRefresh = () => {
+    this.setState({ refreshing: true });
+    socket.emit("getGroups", this.state.userID);
+    this.setState({ refreshing: false });
   };
 
   getUser = async () => {
@@ -189,14 +187,13 @@ export default class GroupsScreen extends Component {
 
   renameGroup = (group, index) => {
     newName = this.state.groups[index].name;
-    if (!newName) {
-      this.deleteGroup(group);
-      return;
+    if (!newName) this.deleteGroup(group);
+    else {
+      groupID = group._id;
+      userID = this.state.userID;
+      socket.emit("renameGroup", groupID, userID, newName);
+      this.setState({ nameEditable: false });
     }
-    groupID = group._id;
-    userID = this.state.userID;
-    socket.emit("renameGroup", groupID, userID, newName);
-    this.setState({ nameEditable: false });
   };
 
   deleteGroup = group => {

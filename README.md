@@ -15,6 +15,11 @@ Collaborative to do lists
 - [Node.js](https://nodejs.org/)
 - [mongoDB](https://www.mongodb.com)
 
+### Additional development dependencies
+
+- [Jest](https://jestjs.io/)
+- [Mocha](https://mochajs.org/)
+
 # Usage
 
 All commands should be run in the project root directory.

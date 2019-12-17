@@ -23,12 +23,14 @@ import plusIcon from "./assets/plusIcon.png";
 import data from "./data.json";
 import styles from "./styles";
 import HeaderButton from "./CustomComponents";
+import RenameModal from "./RenameModal";
 
 export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
-
-    this.state = { userID: "", groups: [], nameEditable: false };
+    //TODO: remove
+    const fakeGroup = { _id: 0, name: fakeGroup };
+    this.state = { userID: "", groups: [], nameEditable: false, viewRenameModal: false, renameGroup: fakeGroup };
 
     //gets userID (from saved usertoken) and then all the users groups
     this.getUser();
@@ -85,8 +87,8 @@ export default class GroupsScreen extends Component {
                       right={[
                         {
                           text: "Rename",
-                          backgroundColor: "blue"
-                          //onPress: () => this.setState({ nameEditable: true })
+                          backgroundColor: "blue",
+                          onPress: () => this.setState({ viewRenameModal: true, renameGroup: item })
                         },
                         {
                           text: "Delete",
@@ -148,6 +150,11 @@ export default class GroupsScreen extends Component {
             <View style={{ margin: 40 }}>
               <Button title="Sign me out" onPress={this._signOutAsync} />
             </View>
+            <RenameModal
+              visible={this.state.viewRenameModal}
+              group={this.state.renameGroup}
+              onSubmit={(newName, group) => this.newName}
+            />
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -183,6 +190,13 @@ export default class GroupsScreen extends Component {
     userID = this.state.userID;
     socket.emit("renameGroup", groupID, userID, newName);
     this.setState({ nameEditable: false });
+  };
+
+  newName = (newName, group) => {
+    console.log("New name given");
+    console.log(newName);
+    console.log(group);
+    this.setState({ viewRenameModal: false });
   };
 
   deleteGroup = group => {

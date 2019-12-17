@@ -39,7 +39,7 @@ export default class LogInScreen extends Component {
   }
 
   componentWillUnmount() {
-    socket.off(); // Remove socket listeners on unmount
+    socket.off("authenticate"); // Remove socket listeners on unmount
     this.didFocusSubscription.remove();
   }
 

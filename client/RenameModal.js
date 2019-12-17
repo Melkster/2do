@@ -14,14 +14,21 @@ import styles from "./styles";
 export default class RenameModal extends Component {
   constructor(props) {
     super(props);
-    name = this.props.group.name;
-    this.state = { newName: name };
+    group = this.props.group;
+    name = group.name;
+    console.log("name: ");
+    console.log(name);
+    console.log("group: ");
+    console.log(group);
+    this.state = { newName: name, initialName: name };
   }
 
   render() {
+    initialName = this.state.initialName;
     group = this.props.group;
-    initialName = group.name;
-    console.log(initialName);
+    if (this.state.newName != group.name) {
+      this.setState({ newName: group.name });
+    }
 
     return (
       <Modal

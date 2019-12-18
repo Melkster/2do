@@ -15,9 +15,16 @@ Collaborative to do lists
 - [Node.js](https://nodejs.org/)
 - [mongoDB](https://www.mongodb.com)
 
+### Additional development dependencies
+
+- [Jest](https://jestjs.io/)
+- [Mocha](https://mochajs.org/)
+
 # Usage
 
 All commands should be run in the project root directory.
+
+To install all dependencies run `make install`.
 
 To start the server and database, run `make run_server`.
 

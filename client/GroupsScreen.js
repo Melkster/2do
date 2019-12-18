@@ -29,15 +29,14 @@ import RenameModal from "./RenameModal";
 export default class GroupsScreen extends Component {
   constructor(props) {
     super(props);
-    //TODO: remove
-    const fakeGroup = { _id: 0, name: "fakeGroup" };
+
     this.state = {
       userID: "",
       groups: [],
       nameEditable: false,
       refreshing: false,
-      viewRenameModal: false,
-      renameGroup: fakeGroup
+      modalVisible: false,
+      renameGroup: null
     };
 
     //gets userID (from saved usertoken) and then all the users groups
@@ -58,7 +57,7 @@ export default class GroupsScreen extends Component {
   };
 
   componentDidMount() {
-    this.props.navigation.setParams({ addButton: this.createNewGroup });
+    this.props.navigation.setParams({ addButton: () => this.createNewGroup("") });
     socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
     this.didFocus = this.props.navigation.addListener("didFocus", () => {
       socket.on("getGroups", (groups, err) => this.handleGroups(groups, err));
@@ -99,10 +98,7 @@ export default class GroupsScreen extends Component {
                           {
                             text: "Rename",
                             backgroundColor: "blue",
-                            onPress: () => {
-                              console.log(item);
-                              this.setState({ renameGroup: item, viewRenameModal: true });
-                            }
+                            onPress: () => this.setState({ renameGroup: item, modalVisible: true })
                           },
                           {
                             text: "Delete",
@@ -140,7 +136,7 @@ export default class GroupsScreen extends Component {
                             pointerEvents="none"
                             autoFocus={true}
                             // onBlur is called when the user finishes writing in the textinput
-                            onBlur={() => this.renameGroup(item, index)}
+                            onBlur={() => this.renameGroup(item, item.name)}
                           />
                         </TouchableOpacity>
                       </Swipeout>
@@ -152,7 +148,7 @@ export default class GroupsScreen extends Component {
                         <View style={styles.checkbox}>
                           <Image source={section.icon} style={styles.listImage} />
                         </View>
-                        <TouchableOpacity onPress={this.createNewGroup}>
+                        <TouchableOpacity onPress={() => this.createNewGroup("")}>
                           <Text style={styles.listText}>{item.value}</Text>
                         </TouchableOpacity>
                       </View>
@@ -165,10 +161,10 @@ export default class GroupsScreen extends Component {
                 <Button title="Sign me out" onPress={this._signOutAsync} />
               </View>
               <RenameModal
-                visible={this.state.viewRenameModal}
+                visible={this.state.modalVisible}
                 setModalVisible={bool => this.setModalVisible(bool)}
-                group={this.state.renameGroup}
-                onSubmit={name => this.newName(name)}
+                item={this.state.renameGroup}
+                onSubmit={name => this.renameGroup(this.state.renameGroup, name)}
               />
             </View>
           </TouchableWithoutFeedback>
@@ -198,38 +194,56 @@ export default class GroupsScreen extends Component {
     socket.emit("getGroups", userID);
   };
 
-  renameGroup = (group, index) => {
-    newName = this.state.groups[index].name;
+  renameGroup = (group, newName) => {
     if (!newName) this.deleteGroup(group);
     else {
       groupID = group._id;
       userID = this.state.userID;
-      socket.emit("renameGroup", groupID, userID, newName);
-      this.setState({ nameEditable: false });
+      if (groupID) {
+        socket.emit("renameGroup", groupID, userID, newName);
+      } else {
+        socket.emit("createGroup", userID, newName);
+      }
     }
-  };
-
-  newName = (newName, group) => {
-    console.log("New name given:");
-    console.log(newName);
-    console.log("group:");
-    console.log(group);
-    this.setState({ viewRenameModal: false });
+    this.setState({ nameEditable: false, modalVisible: false });
   };
 
   setModalVisible = bool => {
-    this.setState({ viewRenameModal: bool });
+    this.setState({ modalVisible: bool });
   };
 
   deleteGroup = group => {
     groupID = group._id;
-    userID = this.state.userID;
-    socket.emit("deleteGroup", groupID, userID);
+    if (groupID) {
+      this.alertDeleteGroup(group);
+    } else {
+      this.state.groups.pop();
+      this.setState({ groups: this.state.groups });
+    }
   };
 
-  createNewGroup = () => {
+  alertDeleteGroup = group => {
+    groupID = group._id;
+    groupName = group.name;
+    userID = this.state.userID;
+    Alert.alert(
+      "Do you want to delete " + JSON.stringify(groupName),
+      "This will permanantly delete the group including all its lists and tasks.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", onPress: () => socket.emit("deleteGroup", groupID, userID), style: "destructive" }
+      ],
+      { cancelable: false }
+    );
+  };
+
+  /**
+   * Called to create a new group locally at the end of the list.
+   */
+  createNewGroup = name => {
+    group = { name: name, _id: null };
+    this.state.groups.push(group);
     this.setState({ nameEditable: true });
-    socket.emit("createGroup", this.state.userID, "");
   };
 
   _signOutAsync = async () => {

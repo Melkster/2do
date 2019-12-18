@@ -193,7 +193,7 @@ export default class ListsScreen extends Component {
             </Modal>
             <RenameModal
               visible={this.state.renameModalVisible}
-              setModalVisible={bool => this._setModalVisible("rename", bool)}
+              setModalVisible={visible => this._setModalVisible("rename", visible)}
               item={this.state.renameList}
               onSubmit={name => this.renameList(this.state.renameList, name)}
             />

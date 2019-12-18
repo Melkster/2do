@@ -1,8 +1,8 @@
 import io from "socket.io-client";
 import { Alert } from "react-native";
 
-socket = io("http://10.0.2.2:3000");
-// socket = io("http://localhost:3000");
+//socket = io("http://10.0.2.2:3000");
+socket = io("http://localhost:3000");
 
 var connect_error = false; // Ensures that an error connecting only is alerted once
 

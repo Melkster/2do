@@ -14,40 +14,26 @@ import styles from "./styles";
 export default class RenameModal extends Component {
   constructor(props) {
     super(props);
-    group = this.props.group;
-    name = group.name;
-    console.log("name: ");
-    console.log(name);
-    console.log("group: ");
-    console.log(group);
-    this.state = { newName: name, initialName: name };
+    this.state = { newName: "" };
   }
 
   render() {
-    initialName = this.state.initialName;
     group = this.props.group;
-    if (this.state.newName != group.name) {
-      this.setState({ newName: group.name });
-    }
-
+    initialName = group.name;
     return (
-      <Modal
-        visible={this.props.visible}
-        animationType={"slide"}
-        onRequestClose={this.props.onSubmit(this.state.newName, group)}
-      >
+      <Modal visible={this.props.visible} animationType={"slide"} onRequestClose={() => this.renameGroup()}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.container}>
             <TextInput
               value={this.state.newName}
               onChangeText={newName => this.setState({ newName })}
-              placeholder={"New name"}
+              placeholder={group.name}
               style={styles.input}
               autoFocus={true}
             />
 
             <Button onPress={this.props.onSubmit(this.state.newName, group)} title="Rename" />
-            <TouchableOpacity style={styles.clearButton} onPress={() => this.props.onSubmit(initialName, group)}>
+            <TouchableOpacity style={styles.clearButton} onPress={() => this.props.setModalVisible(false)}>
               <Text>Go back</Text>
             </TouchableOpacity>
           </View>
@@ -55,4 +41,13 @@ export default class RenameModal extends Component {
       </Modal>
     );
   }
+
+  renameGroup = () => {
+    newName = this.state.newName;
+    if (newName) {
+      this.props.onSubmit("name", "group");
+    } else {
+      this.props.setModalVisible(false);
+    }
+  };
 }

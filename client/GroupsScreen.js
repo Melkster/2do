@@ -166,8 +166,9 @@ export default class GroupsScreen extends Component {
               </View>
               <RenameModal
                 visible={this.state.viewRenameModal}
+                setModalVisible={bool => this.setModalVisible(bool)}
                 group={this.state.renameGroup}
-                onSubmit={(newName, group) => this.newName}
+                onSubmit={(newName, group) => this.newName(newName, group)}
               />
             </View>
           </TouchableWithoutFeedback>
@@ -214,6 +215,10 @@ export default class GroupsScreen extends Component {
     console.log("group:");
     console.log(group);
     this.setState({ viewRenameModal: false });
+  };
+
+  setModalVisible = bool => {
+    this.setState({ viewRenameModal: bool });
   };
 
   deleteGroup = group => {

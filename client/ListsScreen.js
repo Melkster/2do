@@ -19,6 +19,7 @@ import Swipeout from "react-native-swipeout";
 import listIcon from "./assets/listIcon.png";
 import newListIcon from "./assets/newListIcon.png";
 import HeaderButton from "./CustomComponents";
+import RenameModal from "./RenameModal";
 
 import data from "./data.json";
 import styles from "./styles.js";
@@ -28,8 +29,17 @@ export default class ListsScreen extends Component {
     super(props);
 
     groupID = this.props.navigation.getParam("id");
+
     // empty lists-state before we get the lists from server
-    this.state = { lists: [], groupID: groupID, nameEditable: false, inviteUsername: null, modalVisible: false };
+    this.state = {
+      lists: [],
+      groupID: groupID,
+      nameEditable: false,
+      inviteUsername: null,
+      inviteModalVisible: false,
+      renameList: null,
+      renameModalVisible: false
+    };
     // get the lists for the choosen group from DB
     socket.emit("enterGroupRoom", groupID);
   }
@@ -44,7 +54,7 @@ export default class ListsScreen extends Component {
           <HeaderButton
             title={"Invite"}
             onPress={() => {
-              navigation.getParam("setModalVisible")(true);
+              navigation.getParam("setModalVisible")("invite", true);
             }}
             style={styles.addButton}
           />
@@ -56,7 +66,7 @@ export default class ListsScreen extends Component {
 
   componentDidMount() {
     this.props.navigation.setParams({
-      addButton: this.createNewList,
+      addButton: () => this.createNewList(""),
       setModalVisible: this._setModalVisible
     });
     socket.on("getLists", (lists, err) => this.handleLists(lists, err));
@@ -110,8 +120,8 @@ export default class ListsScreen extends Component {
                       right={[
                         {
                           text: "Rename",
-                          backgroundColor: "blue"
-                          //onPress: () => this.setState({ nameEditable: true })
+                          backgroundColor: "blue",
+                          onPress: () => this.setState({ renameList: item, renameModalVisible: true })
                         },
                         {
                           text: "Delete",
@@ -143,7 +153,7 @@ export default class ListsScreen extends Component {
                           value={this.state.lists[index].name}
                           style={styles.listTextInput}
                           // TODO: onBlur -> update task name in DB
-                          onBlur={() => this.renameList(item, index)}
+                          onBlur={() => this.renameList(item, item.name)}
                         />
                       </TouchableOpacity>
                     </Swipeout>
@@ -154,7 +164,7 @@ export default class ListsScreen extends Component {
                       <View style={styles.checkbox}>
                         <Image source={section.icon} style={styles.listImage} />
                       </View>
-                      <TouchableOpacity onPress={this.createNewList}>
+                      <TouchableOpacity onPress={() => this.createNewList("")}>
                         <Text style={styles.listText}>{item.value}</Text>
                       </TouchableOpacity>
                     </View>
@@ -163,7 +173,7 @@ export default class ListsScreen extends Component {
               }}
               keyExtractor={(group, index) => index}
             />
-            <Modal visible={this.state.modalVisible} animationType={"slide"} onRequestClose={this._submit}>
+            <Modal visible={this.state.inviteModalVisible} animationType={"slide"} onRequestClose={this._submit}>
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.container}>
                   <TextInput
@@ -175,12 +185,18 @@ export default class ListsScreen extends Component {
                   />
 
                   <Button onPress={this._submit} title="Invite user" />
-                  <TouchableOpacity style={styles.clearButton} onPress={() => this._setModalVisible(false)}>
+                  <TouchableOpacity style={styles.clearButton} onPress={() => this._setModalVisible("invite", false)}>
                     <Text>Go back</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableWithoutFeedback>
             </Modal>
+            <RenameModal
+              visible={this.state.renameModalVisible}
+              setModalVisible={visible => this._setModalVisible("rename", visible)}
+              item={this.state.renameList}
+              onSubmit={name => this.renameList(this.state.renameList, name)}
+            />
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -198,7 +214,7 @@ export default class ListsScreen extends Component {
   handleInviteUser = err => {
     if (err) this.handleError(err);
     else {
-      this._setModalVisible(false);
+      this._setModalVisible("invite", false);
       Alert.alert("User invited successfully");
     }
   };
@@ -214,31 +230,59 @@ export default class ListsScreen extends Component {
   /**
    * Sets the visibility of modal.
    */
-  _setModalVisible = visible => {
-    this.setState({ modalVisible: visible });
-  };
-
-  createNewList = () => {
-    this.setState({ nameEditable: true });
-    socket.emit("createList", this.state.groupID, "");
-  };
-
-  // TODO: if newName == null -> delete list?
-  renameList = (item, index) => {
-    newName = this.state.lists[index].name;
-    this.setState({ nameEditable: false });
-    if (!newName) {
-      this.deleteList(item);
-      return;
+  _setModalVisible = (type, visible) => {
+    if (type == "invite") {
+      this.setState({ inviteModalVisible: visible });
+    } else if (type == "rename") {
+      this.setState({ renameModalVisible: visible });
+    } else {
+      err = "Modal-type does not exist";
+      this.handleError(err);
     }
-    groupID = this.state.groupID;
-    listID = item._id;
-    socket.emit("renameList", groupID, listID, newName);
   };
 
-  deleteList = item => {
+  createNewList = name => {
+    list = { name: name, _id: null };
+    this.state.lists.push(list);
+    this.setState({ nameEditable: true });
+  };
+
+  renameList = (list, newName) => {
+    if (!newName) this.deleteList(list);
+    else {
+      listID = list._id;
+      groupID = this.state.groupID;
+      if (listID) {
+        socket.emit("renameList", groupID, listID, newName);
+      } else {
+        socket.emit("createList", groupID, newName);
+      }
+    }
+    this.setState({ nameEditable: false, renameModalVisible: false });
+  };
+
+  deleteList = list => {
+    listID = list._id;
+    if (listID) {
+      this.alertDeleteList(list);
+    } else {
+      this.state.lists.pop();
+      this.setState({ lists: this.state.lists });
+    }
+  };
+
+  alertDeleteList = list => {
+    listID = list._id;
+    listName = list.name;
     groupID = this.state.groupID;
-    listID = item._id;
-    socket.emit("deleteList", listID, groupID);
+    Alert.alert(
+      "Do you want to delete " + JSON.stringify(listName),
+      "This will permanantly delete the list including all its tasks.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", onPress: () => socket.emit("deleteList", listID, groupID), style: "destructive" }
+      ],
+      { cancelable: false }
+    );
   };
 }

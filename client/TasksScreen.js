@@ -55,7 +55,7 @@ export default class TasksScreen extends Component {
    * addButton in the header is pressed.
    */
   componentDidMount() {
-    this.props.navigation.setParams({ addButton: this.createNewTask("") });
+    this.props.navigation.setParams({ addButton: () => this.createNewTask("") });
     socket.on("getTasks", (tasks, err) => this.handleTasks(tasks, err));
   }
 
@@ -217,9 +217,9 @@ export default class TasksScreen extends Component {
     if (err) {
       console.log(err);
       this.checkEditState();
-      return;
+    } else {
+      this.sortTasks(tasks);
     }
-    this.sortTasks(tasks);
   };
 
   /**
@@ -248,7 +248,7 @@ export default class TasksScreen extends Component {
   };
 
   /**
-   * Called to create a new empty task at the end of the list.
+   * Called to create a new task locally at the end of the list.
    * AutoFocus is set to 'true' which makes the cursor automatically
    * focus on the new textinput.
    */

@@ -38,7 +38,8 @@ export default class ListsScreen extends Component {
       inviteUsername: null,
       inviteModalVisible: false,
       renameList: null,
-      renameModalVisible: false
+      renameModalVisible: false,
+      swipedRow: null
     };
     // get the lists for the choosen group from DB
     socket.emit("enterGroupRoom", groupID);
@@ -58,7 +59,6 @@ export default class ListsScreen extends Component {
             }}
             style={styles.addButton}
           />
-          <HeaderButton title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
         </View>
       )
     };
@@ -129,7 +129,9 @@ export default class ListsScreen extends Component {
                           onPress: () => this.deleteList(item)
                         }
                       ]}
-                      autoClose={true}
+                      autoClose
+                      close={this.state.swipedRow !== item._id}
+                      onOpen={() => this.setState({ swipedRow: item._id })}
                       backgroundColor="#F5F5F5"
                     >
                       <TouchableOpacity

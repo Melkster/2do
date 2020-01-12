@@ -36,7 +36,8 @@ export default class GroupsScreen extends Component {
       nameEditable: false,
       refreshing: false,
       modalVisible: false,
-      renameGroup: null
+      renameGroup: null,
+      swipedRow: null
     };
 
     //gets userID (from saved usertoken) and then all the users groups
@@ -45,14 +46,14 @@ export default class GroupsScreen extends Component {
 
   static navigationOptions = ({ navigation }) => {
     return {
-      title: "Your groups",
+      title: "Your groups"
       // The "add button" in the top-right corner
       // TODO: change the button to an icon
-      headerRight: (
+      /*headerRight: (
         <View style={styles.headerButtonContainer}>
           <HeaderButton title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
         </View>
-      )
+      )*/
     };
   };
 
@@ -106,7 +107,9 @@ export default class GroupsScreen extends Component {
                             onPress: () => this.deleteGroup(item)
                           }
                         ]}
-                        autoClose={true}
+                        autoClose
+                        close={this.state.swipedRow !== item._id}
+                        onOpen={() => this.setState({ swipedRow: item._id })}
                         backgroundColor="#F5F5F5"
                       >
                         <TouchableOpacity

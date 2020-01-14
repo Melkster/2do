@@ -8,11 +8,13 @@ import {
   KeyboardAvoidingView,
   TextInput,
   View,
+  Image,
   Text,
   TouchableOpacity
 } from "react-native";
 import socket from "./socket";
 import styles from "./styles";
+import logo from "./assets/logo.png";
 import { Separator } from "react-native-tableview-simple";
 
 failed_error = "Login failed";
@@ -48,6 +50,7 @@ export default class LogInScreen extends Component {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView behavior="height" style={styles.container} onPress={Keyboard.dismiss}>
           <View style={styles.container}>
+            <Image source={logo} style={styles.logo} />
             <TextInput
               value={this.state.username}
               onChangeText={username => this.setState({ username })}

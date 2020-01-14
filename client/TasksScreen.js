@@ -28,7 +28,15 @@ export default class TasksScreen extends Component {
 
     // initialize empty tasklist-states (unchecked/checked),
     // autofocus -false means we won't automatically focus on the textinput-fields for each task
-    this.state = { listID: listID, unchecked: [], checked: [], pressedEnter: false, autoFocus: false, edit: null };
+    this.state = {
+      listID: listID,
+      unchecked: [],
+      checked: [],
+      pressedEnter: false,
+      autoFocus: false,
+      edit: null,
+      swipedRow: null
+    };
 
     // get the lists for the choosen group from DB
     socket.emit("enterListRoom", listID);
@@ -43,9 +51,9 @@ export default class TasksScreen extends Component {
   static navigationOptions = ({ navigation }) => {
     title = navigation.getParam("title");
     return {
-      title: title,
+      title: title
       // TODO: change the button to an icon
-      headerRight: <Button title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
+      //headerRight: <Button title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
     };
   };
 
@@ -100,12 +108,7 @@ export default class TasksScreen extends Component {
     ];
 
     return (
-      <KeyboardAvoidingView
-        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
-        behavior="padding"
-        enabled
-        keyboardVerticalOffset={100}
-      >
+      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled keyboardVerticalOffset={100}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
             <SectionList
@@ -118,13 +121,15 @@ export default class TasksScreen extends Component {
                       right={[
                         {
                           text: "Delete",
-                          backgroundColor: "red",
+                          backgroundColor: "#F76F6F",
                           onPress: () => {
                             this.deleteTask(item);
                           }
                         }
                       ]}
-                      autoClose={true}
+                      autoClose
+                      close={this.state.swipedRow !== item._id}
+                      onOpen={() => this.setState({ swipedRow: item._id })}
                       backgroundColor="#F5F5F5"
                     >
                       <View style={styles.listItem}>

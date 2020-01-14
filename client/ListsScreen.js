@@ -38,7 +38,8 @@ export default class ListsScreen extends Component {
       inviteUsername: null,
       inviteModalVisible: false,
       renameList: null,
-      renameModalVisible: false
+      renameModalVisible: false,
+      swipedRow: null
     };
     // get the lists for the choosen group from DB
     socket.emit("enterGroupRoom", groupID);
@@ -58,7 +59,6 @@ export default class ListsScreen extends Component {
             }}
             style={styles.addButton}
           />
-          <HeaderButton title={"+"} onPress={navigation.getParam("addButton")} style={styles.addButton} />
         </View>
       )
     };
@@ -85,12 +85,7 @@ export default class ListsScreen extends Component {
 
   render() {
     return (
-      <KeyboardAvoidingView
-        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
-        behavior="padding"
-        enabled
-        keyboardVerticalOffset={100}
-      >
+      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled keyboardVerticalOffset={100}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
             <SectionList
@@ -120,16 +115,18 @@ export default class ListsScreen extends Component {
                       right={[
                         {
                           text: "Rename",
-                          backgroundColor: "blue",
+                          backgroundColor: "#9DB7CF",
                           onPress: () => this.setState({ renameList: item, renameModalVisible: true })
                         },
                         {
                           text: "Delete",
-                          backgroundColor: "red",
+                          backgroundColor: "#F76F6F",
                           onPress: () => this.deleteList(item)
                         }
                       ]}
-                      autoClose={true}
+                      autoClose
+                      close={this.state.swipedRow !== item._id}
+                      onOpen={() => this.setState({ swipedRow: item._id })}
                       backgroundColor="#F5F5F5"
                     >
                       <TouchableOpacity
@@ -186,7 +183,7 @@ export default class ListsScreen extends Component {
 
                   <Button onPress={this._submit} title="Invite user" />
                   <TouchableOpacity style={styles.clearButton} onPress={() => this._setModalVisible("invite", false)}>
-                    <Text>Go back</Text>
+                    <Text>Cancel</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableWithoutFeedback>

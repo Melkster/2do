@@ -11,7 +11,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    margin: 10
+    //margin: 10,
+    backgroundColor: "#F5F5F5"
   },
   headerButtonContainer: {
     flexDirection: "row"
@@ -27,7 +28,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: "gray",
-    marginBottom: 10
+    marginBottom: 10,
+    backgroundColor: "white"
   },
   clearButton: {
     alignItems: "center",
@@ -42,7 +44,7 @@ const styles = StyleSheet.create({
     padding: 15
   },
   listHeader: {
-    backgroundColor: "#CDDC89",
+    backgroundColor: "#85A9CB",
     fontSize: 20,
     padding: 5,
     color: "#fff"
@@ -81,9 +83,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#D3D3D3",
     flexDirection: "row"
   },
-  test: {
-    backgroundColor: "red",
-    flex: 1
+  logo: {
+    width: 230,
+    height: 110
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "center",
+    backgroundColor: "#F5F5F5"
   }
 });
 

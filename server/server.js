@@ -161,7 +161,7 @@ mongo.connect(url, { useUnifiedTopology: true }, async function(err, db) {
       try {
         await dbfunc.deleteList(database, new objectID(listID));
         var lists = await dbfunc.getLists(database, new objectID(groupID));
-          io.in(listID).emit("getLists", lists, null);
+          io.in(groupID).emit("getLists", lists, null);
       } catch (err) {
         socket.emit("getLists", null, "Could not delete list");
         console.log(err);

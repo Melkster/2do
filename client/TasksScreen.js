@@ -108,12 +108,7 @@ export default class TasksScreen extends Component {
     ];
 
     return (
-      <KeyboardAvoidingView
-        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
-        behavior="padding"
-        enabled
-        keyboardVerticalOffset={100}
-      >
+      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled keyboardVerticalOffset={100}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
             <SectionList
@@ -126,7 +121,7 @@ export default class TasksScreen extends Component {
                       right={[
                         {
                           text: "Delete",
-                          backgroundColor: "red",
+                          backgroundColor: "#F76F6F",
                           onPress: () => {
                             this.deleteTask(item);
                           }

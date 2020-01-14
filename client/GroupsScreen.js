@@ -72,12 +72,7 @@ export default class GroupsScreen extends Component {
 
   render() {
     return (
-      <KeyboardAvoidingView
-        style={{ flex: 1, flexDirection: "column", justifyContent: "center" }}
-        behavior="padding"
-        enabled
-        keyboardVerticalOffset={100}
-      >
+      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled keyboardVerticalOffset={100}>
         <ScrollView
           refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.handleRefresh} />}
         >
@@ -98,12 +93,12 @@ export default class GroupsScreen extends Component {
                         right={[
                           {
                             text: "Rename",
-                            backgroundColor: "blue",
+                            backgroundColor: "#9DB7CF",
                             onPress: () => this.setState({ renameGroup: item, modalVisible: true })
                           },
                           {
                             text: "Delete",
-                            backgroundColor: "red",
+                            backgroundColor: "#F76F6F",
                             onPress: () => this.deleteGroup(item)
                           }
                         ]}
